@@ -1,4 +1,4 @@
-(define-module (root)
+(define-module (physics root)
              #:use-module (guix packages)
                #:use-module (guix download)
                #:use-module (guix build-system cmake)
