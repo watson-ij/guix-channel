@@ -110,8 +110,7 @@ set(PCRE_LIBRARIES \"-L${PCRE_PREFIX}/lib -lpcre\")")))
    (synopsis "ROOT - Data Analysis Framework")
    (description "ROOT - Data Analysis Framework")
    (home-page "https://root.cern.ch/")
-					;   (license lgpl2.1)
-   (license bsd-3)
+   (license lgpl2.1)
    ))
 
 root
