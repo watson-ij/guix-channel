@@ -1,4 +1,4 @@
-(define-module (root)
+(define-module (physics fastjet)
              #:use-module (guix packages)
                #:use-module (guix download)
                #:use-module (guix build-system gnu)
