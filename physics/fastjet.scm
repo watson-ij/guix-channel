@@ -46,5 +46,3 @@
    (home-page "http://fastjet.fr/")
    (license gpl2)
    ))
-
-fastjet

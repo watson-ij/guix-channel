@@ -207,4 +207,4 @@ set(PCRE_LIBRARIES \"-L${PCRE_PREFIX}/lib -lpcre\")")))
    (license lgpl2.1)
    ))
 
-(define root root-6)
+(define-public root root-6)
