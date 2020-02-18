@@ -137,7 +137,7 @@ set(PCRE_LIBRARIES \"-L${PCRE_PREFIX}/lib -lpcre\")")))
    ;; (build-system gnu-build-system)
    (native-inputs `(("sed" ,sed) ("pkg-config" ,pkg-config)))
    (inputs `(("cc" ,gcc-toolchain)
-	     ("python" ,python-2.7)
+	     ("python" ,python)
 	     ("bash" ,bash)
 	     ("gsl" ,gsl)
 	     ("pcre" ,pcre)
@@ -167,10 +167,11 @@ set(PCRE_LIBRARIES \"-L${PCRE_PREFIX}/lib -lpcre\")")))
 	      ))
    (arguments
     `(#:configure-flags
-      '(
+      (list
 	"-Drpath=ON"
 	"-DCMAKE_INSTALL_LIBDIR=lib"
 	"-DCMAKE_INSTALL_INCLUDEDIR=include"
+	(string-append "-DC_INCLUDE_DIRS=" (assoc-ref %build-inputs "cc") "/include")
 	"-Dgviz=OFF"
 	"-Dhdfs=OFF"
 	"-Dkrb5=OFF"
@@ -199,18 +200,7 @@ set(PCRE_LIBRARIES \"-L${PCRE_PREFIX}/lib -lpcre\")")))
       #:phases
       (modify-phases
        %standard-phases
-       (delete 'check)
-       (add-after
-	'unpack 'patch-paths
-	(lambda* (#:key inputs #:allow-other-keys)
-	  (substitute* "cmake/modules/FindPCRE.cmake"
-		       (("set.PCRE_FOUND 0.")
-			(string-append "set(PCRE_FOUND 1)
-set(PCRE_PREFIX \"" (assoc-ref inputs "pcre") "\")
-set(PCRE_INCLUDE_DIR \"${PCRE_PREFIX}/include\")
-set(PCRE_LIBRARIES \"-L${PCRE_PREFIX}/lib -lpcre\")")))
-	  #t)))
-      ))
+       (delete 'check))))
    (synopsis "ROOT - Data Analysis Framework")
    (description "ROOT - Data Analysis Framework")
    (home-page "https://root.cern.ch/")
@@ -218,5 +208,3 @@ set(PCRE_LIBRARIES \"-L${PCRE_PREFIX}/lib -lpcre\")")))
    ))
 
 (define root root-6)
-
-root
