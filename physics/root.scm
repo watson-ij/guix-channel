@@ -19,6 +19,8 @@
                #:use-module (gnu packages xml)
 	       #:use-module (gnu packages xorg)
 	       #:use-module (gnu packages gl)
+	       #:use-module (gnu packages tbb)
+	       #:use-module (gnu packages python-xyz)
                #:use-module (gnu packages python))
 
 (define-public root-5
