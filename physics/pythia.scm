@@ -1,4 +1,5 @@
 (define-module (physics pythia)
+  #:use-module (physics hepmc)
   #:use-module (guix packages)
   #:use-module (guix download)
   #:use-module (guix build-system gnu)
@@ -25,8 +26,10 @@
    (native-inputs `(("rsync" ,rsync)))
    (inputs `(("cc" ,gcc-toolchain)
 	     ("bash" ,bash)
+	     ("hepmc" ,hepmc)
 	     ))
-   (arguments `(#:phases
+   (arguments `(#:configure-flags (list (string-append "--with-hepmc2=" (assoc-ref %build-inputs "hepmc")))
+		#:phases
 		(modify-phases
 		 %standard-phases
 		 (delete 'check))))
@@ -35,5 +38,3 @@
    (home-page "https://cp3.irmp.ucl.ac.be/projects/pythia")
    (license cc-by-sa4.0)
    ))
-
-pythia
