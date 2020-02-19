@@ -141,7 +141,9 @@
 	  (substitute* '("MG5_aMC_v2_7_0/Template/LO/Source/make_opts"
 			 "MG5_aMC_v2_7_0/Template/NLO/Source/make_opts.inc")
 	  	       (("ifneq \\(\\$\\(lhapdf\\),\\)\n")
-			(string-append "ifneq ($(lhapdf),)\nCXXFLAGS += -I" boost "/include\n")))
+			(string-append "ifneq ($(lhapdf),)\nCXXFLAGS += -I" boost "/include -I"
+				       headers "/include -I"
+				       libtirpc "/include/tirpc\n")))
 
 	  (substitute* '("MG5_aMC_v2_7_0/bin/mg5" "MG5_aMC_v2_7_0/bin/mg5_aMC")
 	  	       (("#! /usr/bin/env python")
