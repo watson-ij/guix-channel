@@ -10,6 +10,7 @@
   #:use-module (gnu packages algebra)
   #:use-module (gnu packages base)
   #:use-module (gnu packages bash)
+  #:use-module (gnu packages boost)
   #:use-module (gnu packages onc-rpc)
   #:use-module (gnu packages compression)
   #:use-module (gnu packages commencement)
@@ -52,6 +53,7 @@
 	     ("find" ,findutils)
 	     ("wget" ,wget)
 	     ("tar" ,tar)
+	     ("boost" ,boost)
 	     ("gzip" ,gzip)
 	     ("bc" ,bc)
 	     ("make" ,gnu-make)
@@ -101,6 +103,7 @@
 	       (numpy (assoc-ref %build-inputs "numpy"))
 	       (fortran (assoc-ref %build-inputs "fortran"))
 	       (gcc (assoc-ref %build-inputs "gcc"))
+	       (boost (assoc-ref %build-inputs "boost"))
 	       (bc (assoc-ref %build-inputs "bc"))
 	       (make (assoc-ref %build-inputs "make"))
 	       (find (assoc-ref %build-inputs "find"))
@@ -130,6 +133,12 @@
 	  ;; fortran needs to link to the runtime setup
 	  ;; (substitute* '("MG5_aMC_v2_7_0/Template/LO/Source/make_opts" "MG5_aMC_v2_7_0/Template/NLO/Source/make_opts.inc")
 	  ;; 	       (("# Options: dynamic, lhapdf") (string-append "LDFLAGS += -L" fortran "/lib \n# Options: dynamic, lhapdf")))
+
+	  ;; lhapdf links to boost ?
+	  (substitute* '("MG5_aMC_v2_7_0/Template/LO/Source/make_opts"
+			 "MG5_aMC_v2_7_0/Template/NLO/Source/make_opts.inc")
+	  	       (("ifneq \\(\\$\\(lhapdf\\),\\)\n")
+			(string-append "ifneq ($(lhapdf),)\nCXXFLAGS += -I" boost "/include\n")))
 
 	  (substitute* '("MG5_aMC_v2_7_0/bin/mg5" "MG5_aMC_v2_7_0/bin/mg5_aMC")
 	  	       (("#! /usr/bin/env python")
@@ -202,8 +211,8 @@
 			(string-append "lhapdf = " lhapdf "/bin/lhapdf-config"))
 		       (("# fastjet = fastjet-config")
 			(string-append "fastjet = " fastjet "/bin/fastjet-config"))
-		       (("# run_mode = 2")
-			"run_mode = 0")
+		       ;; (("# run_mode = 2")
+		       ;; 	"run_mode = 0")
 		       )
 	  
 	  (substitute* "MG5_aMC_v2_7_0/madgraph/iolibs/files.py"

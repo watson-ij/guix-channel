@@ -101,13 +101,12 @@
 		   (begin
 		     (use-modules (guix build utils))
 		     (let* ((out (assoc-ref %outputs "out"))
-			    (outdir (string-append out "/" pdf-name))
 			    (source (assoc-ref %build-inputs "source"))
 			    (tar (assoc-ref %build-inputs "tar"))
 			    (gzip (assoc-ref %build-inputs "gzip")))
-		       (mkdir-p outdir)
+		       (mkdir-p out)
 		       (setenv "PATH" (string-append gzip "/bin"))
-		       (invoke (string-append tar "/bin/tar") "-C" outdir "-xf" source)))
+		       (invoke (string-append tar "/bin/tar") "-C" out "-xf" source)))
 		   ))
       (synopsis "A PDF")
       (description "A PDF")
@@ -117,7 +116,8 @@
 
 (pdf-package CT10 "CT10" "17glhnqj4yknqy70zs7m097n1qq9fqljj3mna6qxchmgql04dvxw")
 (pdf-package CT10nlo "CT10nlo" "14ib003sxpxc8awywjckbw124aqhmi70wg4hlwc2nvdh46sqk11b")
+(pdf-package NNPDF31_nnlo_hessian_pdfas "NNPDF31_nnlo_hessian_pdfas" "1m5wdnj7hvg2a51w1qmhm934glhjf9db0x5nry5blp90y5x0v185")
 
 lhapdf
-
 CT10nlo
+NNPDF31_nnlo_hessian_pdfas
