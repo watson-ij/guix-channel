@@ -76,7 +76,10 @@
 	      ,(origin
 		(method url-fetch)
 		(uri "http://madgraph.phys.ucl.ac.be/Downloads/MG5aMC_PY8_interface/MG5aMC_PY8_interface_V1.0.tar.gz")
-		(sha256 (base32 "1kyw6rcf13g2ca8jy1qgfnmjqjsrxlq0lp1bdy88wcz2qvh4zrg1"))))
+		(sha256 (base32
+			 "0n5phf2q9jlbxa8rnrqd7v5z9bc7k7hczz7vlx5bfkn1na27bijl"
+			 ;"1kyw6rcf13g2ca8jy1qgfnmjqjsrxlq0lp1bdy88wcz2qvh4zrg1"
+			 ))))
 
 					; example of adding an additional model
 	     ("zprime"
