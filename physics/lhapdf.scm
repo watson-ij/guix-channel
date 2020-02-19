@@ -2,6 +2,7 @@
   #:use-module (guix packages)
   #:use-module (guix download)
   #:use-module (guix build-system gnu)
+  #:use-module (guix build-system trivial)
   #:use-module (guix licenses)
   #:use-module (gnu packages algebra)
   #:use-module (gnu packages base)
@@ -19,6 +20,7 @@
   #:use-module (gnu packages xml)
   #:use-module (gnu packages xorg)
   #:use-module (gnu packages gl)
+  #:use-module (gnu packages compression)
   #:use-module (gnu packages python))
 
 (define-public lhapdf
@@ -38,29 +40,84 @@
    (inputs `(("cc" ,gcc-toolchain)
 	     ("bash" ,bash)
 	     ("python" ,python-2.7)
+	     ;; ("index" ,(origin
+	     ;; 		(source
+	     ;; 		 (method fetch-url)
+	     ;; 		 (source "http://lhapdfsets.web.cern.ch/lhapdfsets/current/pdfsets.index")
+	     ;; 		 (sha256 (base32 "12iwrrwi0iapn5l1pmr6i6rg3493m0xmanqyqh9fifjhpqrr4m7v")))))
 	     ))
    (arguments
-    `(#:configure-flags '("--disable-python")
+    `(#:make-flags
+      (list
+       (string-append "LDFLAGS=-Wl,-rpath="
+		      (assoc-ref %outputs "out")
+		      "/lib"))
+
       #:phases
-      (modify-phases %standard-phases
-		     (add-after 'unpack 'patch-shebangs
-				(lambda* (#:key inputs outputs #:allow-other-keys)
-					 (substitute* "bin/lhapdf"
-						      (("#! /usr/bin/env python") (string-append "#!" (assoc-ref inputs "python") "/bin/python2"))
-						      (("add_add_mutually_exclusive_group") "add_mutually_exclusive_group"))
-					 #t))
-         ;; (add-after 'install 'wrap-executable
-         ;;   (lambda* (#:key inputs outputs #:allow-other-keys)
-         ;;     (let ((out (assoc-ref outputs "out")))
-         ;;       (wrap-program (string-append out "/bin/lhapdf")
-         ;;         `("PYTHONPATH" ":" prefix (string-append out "/lib")))
-         ;;       #t)))
+      (modify-phases
+       %standard-phases
+       (add-after 'unpack 'patch-shebangs
+		  (lambda* (#:key inputs outputs #:allow-other-keys)
+			   (substitute* "bin/lhapdf"
+					(("#! /usr/bin/env python") (string-append "#!" (assoc-ref inputs "python") "/bin/python2"))
+					(("add_add_mutually_exclusive_group") "add_mutually_exclusive_group"))
+			   #t))
+
+       ; There is a built-in index, but not necessarily up-to-date
+       ;; (add-after 'install 'link-index
+       ;; 		  (lambda* (#:key inputs outputs #:allow-other-keys)
+       ;; 			   (symlink (assoc-ref inputs "index") (string-append (assoc-ref outputs "out") "/"))))
+       
+       (add-after 'install 'wrap-executable
+         (lambda* (#:key inputs outputs #:allow-other-keys)
+           (let ((out (assoc-ref outputs "out")))
+             (wrap-program (string-append out "/bin/lhapdf")
+               `("PYTHONPATH" ":" prefix (,(string-append out "/lib/python2.7/site-packages"))))
+             #t)))
       )))
    (synopsis "LHAPDF is a general purpose C++ interpolator, used for evaluating PDFs from discretised data files.")
    (description "LHAPDF is a general purpose C++ interpolator, used for evaluating PDFs from discretised data files.")
    (home-page "https://lhapdf.hepforge.org/")
-					;   (license lgpl2.1)
    (license gpl3)
    ))
 
+(define-syntax pdf-package
+  (syntax-rules ()
+    ((pdf-package pdf pdf-name sha)
+     (define-public pdf
+     (package
+      (name pdf-name)
+      (version "0")
+      (home-page "https://lhapdf.hepforge.org/")
+      (source (origin
+	       (method url-fetch)
+	       (uri (string-append "http://lhapdfsets.web.cern.ch/lhapdfsets/current/" pdf-name ".tar.gz"))
+	       (sha256 (base32 sha))))
+      (inputs `(("tar" ,tar)
+		("gzip" ,gzip)))
+      (build-system trivial-build-system)
+      (arguments `(#:modules ((guix build utils))
+		   #:builder
+		   (begin
+		     (use-modules (guix build utils))
+		     (let* ((out (assoc-ref %outputs "out"))
+			    (outdir (string-append out "/" pdf-name))
+			    (source (assoc-ref %build-inputs "source"))
+			    (tar (assoc-ref %build-inputs "tar"))
+			    (gzip (assoc-ref %build-inputs "gzip")))
+		       (mkdir-p outdir)
+		       (setenv "PATH" (string-append gzip "/bin"))
+		       (invoke (string-append tar "/bin/tar") "-C" outdir "-xf" source)))
+		   ))
+      (synopsis "A PDF")
+      (description "A PDF")
+      (license gpl3))
+     )))
+  )
+
+(pdf-package CT10 "CT10" "17glhnqj4yknqy70zs7m097n1qq9fqljj3mna6qxchmgql04dvxw")
+(pdf-package CT10nlo "CT10nlo" "14ib003sxpxc8awywjckbw124aqhmi70wg4hlwc2nvdh46sqk11b")
+
 lhapdf
+
+CT10nlo
