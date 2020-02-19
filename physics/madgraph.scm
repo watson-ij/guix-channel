@@ -66,11 +66,24 @@
 	     ("pythia" ,pythia)
 	     ("fortran" ,gfortran-toolchain)
 	     ("perl" ,perl)
+	     ("zlib" ,zlib)
 	     ("sed" ,sed)
 	     ("grep" ,grep)
 	     ("headers" ,linux-libre-headers)
 	     ("gs" ,ghostscript)
+	     ("which" ,which)
 	     ("gcc" ,gcc-toolchain)
+
+	     ;; from the offline heptools file
+	     ("ma5"  ,(origin
+		    (method url-fetch)
+		    ;; (uri "http://madanalysis.irmp.ucl.ac.be/raw-attachment/wiki/MA5SandBox/ma5_latest.tgz")
+		    ;; (sha256 (base32 "0l1v7ykf5idci5j1mvfkr3cnq9kx931z98sp3isvgpi3qaiwispz"))
+		    (uri "https://launchpad.net/madanalysis5/trunk/v1.7/+download/ma5_v1.7.tgz")
+		    (sha256 (base32 "0wsjk8h92zylygz72ggmvqbdkdbbdc7xvl5z4iiz4bfldgm13jdr"))
+		    ;; (uri "https://launchpad.net/madanalysis5/trunk/v1.6/+download/ma5_v1.6.tgz")
+		    ;; (sha256 (base32 "1dy9vqvxvgm53n6nz8pf6x8xbxibhlfkca1x5jvfgcwhq7hw2h4m"))
+		    ))
 					; input list http://madgraph.phys.ucl.ac.be/package_info.dat
 	     ("mg5amc_py8"
 	      ,(origin
@@ -113,12 +126,15 @@
 	       (pkgconfig (assoc-ref %build-inputs "pkgconfig"))
 	       (perl (assoc-ref %build-inputs "perl"))
 	       (sed (assoc-ref %build-inputs "sed"))
+	       (zlib (assoc-ref %build-inputs "zlib"))
 	       (headers (assoc-ref %build-inputs "headers"))
+	       (which (assoc-ref %build-inputs "which"))
 	       (libtirpc (assoc-ref %build-inputs "libtirpc"))
 	       (grep (assoc-ref %build-inputs "grep"))
 	       (gs (assoc-ref %build-inputs "gs"))
 	       (pythia (assoc-ref %build-inputs "pythia"))
 	       (mg5amc-py8 (assoc-ref %build-inputs "mg5amc_py8"))
+	       (ma5 (assoc-ref %build-inputs "ma5"))
 	       (hepmc (assoc-ref %build-inputs "hepmc"))
 	       (fastjet (assoc-ref %build-inputs "fastjet"))
 	       (source (assoc-ref %build-inputs "source"))
@@ -248,6 +264,7 @@
 	  (substitute* "MG5_aMC_v2_7_0/Template/NLO/SubProcesses/makefile_fks_dir"
 		       (("-I\\.") (string-append "-I" headers "/include -I.")))
 
+	  ;; mg5-pythia8 interface
 	  (invoke (string-append bash "/bin/bash") "-c"
 		  (string-append
 		   "export PATH=" gzip "/bin:" wget "/bin:" coreutils "/bin:" python "/bin:" gcc "/bin:" make "/bin:" bash "/bin:" fortran "/bin:" tar "/bin && "
@@ -272,7 +289,46 @@
 	  (substitute* "MG5_aMC_v2_7_0/input/mg5_configuration.txt"
 		       (("# mg5amc_py8_interface_path = ./HEPTools/MG5aMC_PY8_interface")
 			(string-append "mg5amc_py8_interface_path = " out "/HEPTools/MG5aMC_PY8_interface")))
+
+	  (substitute* "MG5_aMC_v2_7_0/input/mg5_configuration.txt"
+		       (("# mg5amc_py8_interface_path = ./HEPTools/MG5aMC_PY8_interface")
+			(string-append "mg5amc_py8_interface_path = " out "/HEPTools/MG5aMC_PY8_interface")))
 	  
+	  ;; ma5
+	  (invoke (string-append bash "/bin/bash") "-c"
+		  (string-append
+		   "export PATH=" gzip "/bin:" wget "/bin:" coreutils "/bin:" python "/bin:" gcc "/bin:" make "/bin:" bash "/bin:" fortran "/bin:" tar "/bin && "
+		   "mkdir -p MG5_aMC_v2_7_0/HEPTools && "
+		   "mkdir -p MG5_aMC_v2_7_0/HEPTools/ && tar -C MG5_aMC_v2_7_0/HEPTools/ -xf " ma5))
+
+	  ; veto everything (for now)
+	  (substitute* "MG5_aMC_v2_7_0/HEPTools/madanalysis5/madanalysis/input/installation_options.dat"
+		       (("# webaccess_veto = 0") "webaccess_veto = 1")
+		       (("# root_veto     = 0") "root_veto = 1")
+		       (("# matplotlib_veto = 0") "matplotlib_veto = 1")
+		       (("# delphes_veto     = 0") "delphes_veto = 1")
+		       (("# delphesMA5tune_veto     = 0") "delphesMA5tune_veto = 1")
+		       (("# latex_veto     = 0") "latex_veto = 1")
+		       (("# pdflatex_veto     = 0") "pdflatex_veto = 1")
+		       (("# fastjet_veto     = 0") "fastjet_veto = 1")
+		       (("# zlib_veto     = 0") "zlib_veto = 1")
+		       (("# scipy_veto = 0") "scipy_veto = 1")
+		       )
+
+	  (substitute* "MG5_aMC_v2_7_0/HEPTools/madanalysis5/madanalysis/build/makefile_writer.py"
+		       (("cxxflags.extend\\(\\['-Wall'")
+			(string-append
+			 "file.write('LIBRARY_PATH=" gcc "/lib\\n')\n        "
+			 "cxxflags.extend(['-I" headers "/include', '-I" libtirpc "/include/tirpc', '-Wall'"))
+		       (("libs.extend\\(\\['-lz'\\]\\)") (string-append "libs.extend(['-L" zlib "/lib', '-lz'])"))
+		       )
+		   
+	  (invoke (string-append bash "/bin/bash") "-c"
+		  (string-append
+		   "export PATH=" gzip "/bin:" fastjet "/bin:" which "/bin:" wget "/bin:" coreutils "/bin:" python "/bin:" gcc "/bin:" make "/bin:" bash "/bin:" fortran "/bin:" tar "/bin && "
+		   "python MG5_aMC_v2_7_0/HEPTools/HEPToolsInstallers/installMadAnalysis5.py --ma5_path=$PWD/MG5_aMC_v2_7_0/HEPTools/madanalysis5 --mg5_path=MG5_aMC_v2_7_0/ --zlib=" zlib
+		   "&& echo DONE"))
+
 	  (invoke (string-append bash "/bin/bash") "-c"
 		  (string-append
 		   "export PATH=" gzip "/bin:" wget "/bin:" coreutils "/bin:" python "/bin:" gcc "/bin:" make "/bin:" bash "/bin:" fortran "/bin:" tar "/bin && "
