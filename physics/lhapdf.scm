@@ -1,4 +1,4 @@
-(define-module (lhapdf)
+(define-module (physics lhapdf)
   #:use-module (guix packages)
   #:use-module (guix download)
   #:use-module (guix build-system gnu)
