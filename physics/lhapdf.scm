@@ -114,6 +114,7 @@
 (pdf-package CT10nlo "14ib003sxpxc8awywjckbw124aqhmi70wg4hlwc2nvdh46sqk11b")
 (pdf-package NNPDF31_nnlo_hessian_pdfas "1m5wdnj7hvg2a51w1qmhm934glhjf9db0x5nry5blp90y5x0v185")
 (pdf-package NNPDF23_nlo_as_0119_qed "0rayscazcacy89lzg0ynpwrl9g4pnjwwp0l0vwc3gjz9cwznmwsk")
+(pdf-package NNPDF23_lo_as_0130_qed "0qsxxw3nds42924xqnhs56wmd8ihmrip28glj47q9r9i3kgw3lv0")
 
 (define-public pdfsets
   (package
@@ -126,6 +127,7 @@
 	    (sha256 (base32 "12iwrrwi0iapn5l1pmr6i6rg3493m0xmanqyqh9fifjhpqrr4m7v"))))
    (inputs `(("CT10" ,CT10)
 	     ("NNPDF23_nlo_as_0119_qed" ,NNPDF23_nlo_as_0119_qed)
+	     ("NNPDF23_lo_as_0130_qed" ,NNPDF23_lo_as_0130_qed)
 	     ("NNPDF31_nnlo_hessian_pdfas" ,NNPDF31_nnlo_hessian_pdfas)))
    (build-system trivial-build-system)
    (arguments `(#:modules

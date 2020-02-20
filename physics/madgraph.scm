@@ -4,6 +4,7 @@
   #:use-module (physics lhapdf)
   #:use-module (physics fastjet)
   #:use-module (physics delphes)
+  #:use-module (physics root)
   #:use-module (guix packages)
   #:use-module (guix download)
   #:use-module (guix build-system trivial)
@@ -71,6 +72,7 @@
 	     ("delphes" ,delphes)
 	     ("lhapdf" ,lhapdf)
 	     ("pythia" ,pythia)
+	     ("root" ,root)
 	     ("fortran" ,gfortran-toolchain)
 	     ("perl" ,perl)
 	     ("zlib" ,zlib)
@@ -163,6 +165,7 @@
 	       (libtirpc (assoc-ref %build-inputs "libtirpc"))
 	       (grep (assoc-ref %build-inputs "grep"))
 	       (gs (assoc-ref %build-inputs "gs"))
+	       (root (assoc-ref %build-inputs "root"))
 	       (awk (assoc-ref %build-inputs "awk"))
 	       (pythia (assoc-ref %build-inputs "pythia"))
 	       (mg5amc-py8 (assoc-ref %build-inputs "mg5amc_py8"))
@@ -174,7 +177,7 @@
 	       (coreutils (assoc-ref %build-inputs "coreutils")))
 	  (mkdir-p out)
 	  (setenv "PATH" (string-append coreutils "/bin:" gzip "/bin:" gcc "/bin:" fortran "/bin:"
-					python "/bin:" wget "/bin:" make "/bin:" tar "/bin:"
+					python "/bin:" wget "/bin:" make "/bin:" tar "/bin:" root "/bin:"
 					gs "/bin:" find "/bin:" sed "/bin:" grep "/bin:" awk "/bin:"
 					bc "/bin:" which "/bin:" fastjet "/bin:" bash "/bin"))
 	  (setenv "LIBRARY_PATH" (string-append gcc "/lib"))
@@ -309,13 +312,13 @@
 	  ; veto everything (for now)
 	  (substitute* "HEPTools/madanalysis5/madanalysis/input/installation_options.dat"
 	  	       (("# webaccess_veto.*") "webaccess_veto = 1\n")
-	  	       (("# root_veto.*") "root_veto = 1\n")
+	  	       ;; (("# root_veto.*") "root_veto = 1\n")
 	  	       (("# matplotlib_veto.*") "matplotlib_veto = 1\n")
-	  	       (("# delphes_veto.*") "delphes_veto = 1\n")
+	  	       ;; (("# delphes_veto.*") "delphes_veto = 1\n")
 	  	       (("# delphesMA5tune_veto.*") "delphesMA5tune_veto = 1\n")
 	  	       (("# latex_veto.*") "latex_veto = 1\n")
 	  	       (("# pdflatex_veto.*") "pdflatex_veto = 1\n")
-	  	       (("# fastjet_veto.*") "fastjet_veto = 1\n")
+	  	       ;; (("# fastjet_veto.*") "fastjet_veto = 1\n")
 	  	       (("# scipy_veto.*") "scipy_veto = 1\n")
 	  	       )
 
