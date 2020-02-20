@@ -137,10 +137,9 @@
 		  (chdir (assoc-ref %outputs "out"))
 		  (for-each
 		   (lambda (b)
-		     (symlink (cdr b)
-			      (if (string=? "source" (car b))
-				  "pdfsets.index"
-				  (car b))))
+		     (if (string=? "source" (car b))
+			 (symlink (cdr b) "pdfsets.index")
+		     (symlink (string-append (cdr b) "/" (car b)) (car b))))
 		   %build-inputs))))
    (home-page "https://lhapdf.hepforge.org/")
    (synopsis "A set of PDFs linked together")
