@@ -81,47 +81,39 @@
    (license gpl3)
    ))
 
-(define-syntax pdf-package
-  (syntax-rules ()
-    ((pdf-package pdf pdf-name sha)
-     (define-public pdf
+(define-macro (pdf-package pdf sha)
+  `(define-public ,pdf
      (package
-      (name pdf-name)
+      (name ,(symbol->string pdf))
       (version "0")
       (home-page "https://lhapdf.hepforge.org/")
       (source (origin
 	       (method url-fetch)
-	       (uri (string-append "http://lhapdfsets.web.cern.ch/lhapdfsets/current/" pdf-name ".tar.gz"))
-	       (sha256 (base32 sha))))
+	       (uri (string-append "http://lhapdfsets.web.cern.ch/lhapdfsets/current/" ,(symbol->string pdf) ".tar.gz"))
+	       (sha256 (base32 ,sha))))
       (inputs `(("tar" ,tar)
 		("gzip" ,gzip)))
       (build-system trivial-build-system)
       (arguments `(#:modules ((guix build utils))
-		   #:builder
-		   (begin
-		     (use-modules (guix build utils))
-		     (let* ((out (assoc-ref %outputs "out"))
-			    (source (assoc-ref %build-inputs "source"))
-			    (tar (assoc-ref %build-inputs "tar"))
-			    (gzip (assoc-ref %build-inputs "gzip")))
-		       (mkdir-p out)
-		       (setenv "PATH" (string-append gzip "/bin"))
-		       (invoke (string-append tar "/bin/tar") "-C" out "-xf" source)))
-		   ))
+			     #:builder
+			     (begin
+			       (use-modules (guix build utils))
+			       (let* ((out (assoc-ref %outputs "out"))
+				      (source (assoc-ref %build-inputs "source"))
+				      (tar (assoc-ref %build-inputs "tar"))
+				      (gzip (assoc-ref %build-inputs "gzip")))
+				 (mkdir-p out)
+				 (setenv "PATH" (string-append gzip "/bin"))
+				 (invoke (string-append tar "/bin/tar") "-C" out "-xf" source)))
+			     ))
       (synopsis "A PDF")
       (description "A PDF")
-      (license gpl3))
-     )))
-  )
+      (license gpl3))))
 
-(pdf-package CT10 "CT10" "17glhnqj4yknqy70zs7m097n1qq9fqljj3mna6qxchmgql04dvxw")
-(pdf-package CT10nlo "CT10nlo" "14ib003sxpxc8awywjckbw124aqhmi70wg4hlwc2nvdh46sqk11b")
-(pdf-package NNPDF31_nnlo_hessian_pdfas "NNPDF31_nnlo_hessian_pdfas" "1m5wdnj7hvg2a51w1qmhm934glhjf9db0x5nry5blp90y5x0v185")
-
-lhapdf
-CT10nlo
-NNPDF31_nnlo_hessian_pdfas
-
+(pdf-package CT10 "17glhnqj4yknqy70zs7m097n1qq9fqljj3mna6qxchmgql04dvxw")
+(pdf-package CT10nlo "14ib003sxpxc8awywjckbw124aqhmi70wg4hlwc2nvdh46sqk11b")
+(pdf-package NNPDF31_nnlo_hessian_pdfas "1m5wdnj7hvg2a51w1qmhm934glhjf9db0x5nry5blp90y5x0v185")
+(pdf-package NNPDF23_nlo_as_0119_qed "0rayscazcacy89lzg0ynpwrl9g4pnjwwp0l0vwc3gjz9cwznmwsk")
 
 (define-public pdfsets
   (package
@@ -133,6 +125,7 @@ NNPDF31_nnlo_hessian_pdfas
 	    (uri "http://lhapdfsets.web.cern.ch/lhapdfsets/current/pdfsets.index")
 	    (sha256 (base32 "12iwrrwi0iapn5l1pmr6i6rg3493m0xmanqyqh9fifjhpqrr4m7v"))))
    (inputs `(("CT10" ,CT10)
+	     ("NNPDF23_nlo_as_0119_qed" ,NNPDF23_nlo_as_0119_qed)
 	     ("NNPDF31_nnlo_hessian_pdfas" ,NNPDF31_nnlo_hessian_pdfas)))
    (build-system trivial-build-system)
    (arguments `(#:modules
@@ -154,4 +147,5 @@ NNPDF31_nnlo_hessian_pdfas
    (description "Links all the PDFs given as inputs into a single directory. 
 Set LHAPDF_DATA_PATH to the output directory to use them all.")
    (license gpl3)))
+
 pdfsets

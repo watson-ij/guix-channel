@@ -75,6 +75,7 @@
 	     ("grep" ,grep)
 	     ("headers" ,linux-libre-headers)
 	     ("gs" ,ghostscript)
+	     ("awk" ,awk)
 	     ("which" ,which)
 	     ("gcc" ,gcc-toolchain)
 
@@ -139,6 +140,7 @@
 	       (libtirpc (assoc-ref %build-inputs "libtirpc"))
 	       (grep (assoc-ref %build-inputs "grep"))
 	       (gs (assoc-ref %build-inputs "gs"))
+	       (awk (assoc-ref %build-inputs "awk"))
 	       (pythia (assoc-ref %build-inputs "pythia"))
 	       (mg5amc-py8 (assoc-ref %build-inputs "mg5amc_py8"))
 	       (ma5 (assoc-ref %build-inputs "ma5"))
@@ -150,7 +152,7 @@
 	  (mkdir-p out)
 	  (setenv "PATH" (string-append coreutils "/bin:" gzip "/bin:" gcc "/bin:" fortran "/bin:"
 					python "/bin:" wget "/bin:" make "/bin:" tar "/bin:"
-					gs "/bin:" find "/bin:" sed "/bin:" grep "/bin:"
+					gs "/bin:" find "/bin:" sed "/bin:" grep "/bin:" awk "/bin:"
 					bc "/bin:" which "/bin:" fastjet "/bin:" bash "/bin"))
 	  (setenv "LIBRARY_PATH" (string-append gcc "/lib"))
 	  (invoke "tar" "-xf" source)
