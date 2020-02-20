@@ -121,3 +121,37 @@
 lhapdf
 CT10nlo
 NNPDF31_nnlo_hessian_pdfas
+
+
+(define-public pdfsets
+  (package
+   (name "pdfsets")
+   (version "")
+   ; we seem to need something here
+   (source (origin
+	    (method url-fetch)
+	    (uri "http://lhapdfsets.web.cern.ch/lhapdfsets/current/pdfsets.index")
+	    (sha256 (base32 "12iwrrwi0iapn5l1pmr6i6rg3493m0xmanqyqh9fifjhpqrr4m7v"))))
+   (inputs `(("CT10" ,CT10)
+	     ("NNPDF31_nnlo_hessian_pdfas" ,NNPDF31_nnlo_hessian_pdfas)))
+   (build-system trivial-build-system)
+   (arguments `(#:modules
+		((guix build utils))
+		#:builder
+		(begin
+		  (use-modules (guix build utils))
+		  (mkdir-p (assoc-ref %outputs "out"))
+		  (chdir (assoc-ref %outputs "out"))
+		  (for-each
+		   (lambda (b)
+		     (symlink (cdr b)
+			      (if (string=? "source" (car b))
+				  "pdfsets.index"
+				  (car b))))
+		   %build-inputs))))
+   (home-page "https://lhapdf.hepforge.org/")
+   (synopsis "A set of PDFs linked together")
+   (description "Links all the PDFs given as inputs into a single directory. 
+Set LHAPDF_DATA_PATH to the output directory to use them all.")
+   (license gpl3)))
+pdfsets
