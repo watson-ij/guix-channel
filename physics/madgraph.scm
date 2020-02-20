@@ -35,14 +35,18 @@
 (define-public madgraph
   (package
    (name "madgraph")
-   (version "2.7.0")
+   (version "2.6.7")
    (source
     (origin
      (method url-fetch)
-     (uri "https://launchpad.net/mg5amcnlo/2.0/2.7.x/+download/MG5_aMC_v2.7.0.tar.gz")
+     ;; (uri "https://launchpad.net/mg5amcnlo/2.0/2.7.x/+download/MG5_aMC_v2.7.0.tar.gz")
+     ;; (sha256
+     ;;  (base32
+     ;;   "0khy6ijfcjhdc608rx061iyxn1yldh0is72yx8p73z78npn1w037")))
+     (uri "https://launchpad.net/mg5amcnlo/2.0/2.6.x/+download/MG5_aMC_v2.6.7.tar.gz")
      (sha256
       (base32
-       "0khy6ijfcjhdc608rx061iyxn1yldh0is72yx8p73z78npn1w037")))
+       "1cacvs2hff9c808k29ac6lb3k6bzfla7bqn99gcbf5i09cd9knyl")))
     )
    (build-system trivial-build-system)
    (native-inputs `(
@@ -144,212 +148,169 @@
 	       (zprime (assoc-ref %build-inputs "zprime"))
 	       (coreutils (assoc-ref %build-inputs "coreutils")))
 	  (mkdir-p out)
-	  (invoke (string-append bash "/bin/bash") "-c"
-		  (string-append
-		   "export PATH=" gzip "/bin:" gcc "/bin:" python "/bin && "
-		   tar "/bin/tar "
-		   " -xf " source " && "
-		   "python MG5_aMC_v2_7_0/bin/mg5"
-		   ))
+	  (setenv "PATH" (string-append coreutils "/bin:" gzip "/bin:" gcc "/bin:" fortran "/bin:"
+					python "/bin:" wget "/bin:" make "/bin:" tar "/bin:"
+					gs "/bin:" find "/bin:" sed "/bin:" grep "/bin:"
+					bc "/bin:" which "/bin:" fastjet "/bin:" bash "/bin"))
+	  (setenv "LIBRARY_PATH" (string-append gcc "/lib"))
+	  (invoke "tar" "-xf" source)
+	  (chdir "MG5_aMC_v2_6_7")
+	  (invoke "python" "bin/mg5_aMC")
 
-	  ;; fortran needs to link to the runtime setup
-	  ;; (substitute* '("MG5_aMC_v2_7_0/Template/LO/Source/make_opts" "MG5_aMC_v2_7_0/Template/NLO/Source/make_opts.inc")
-	  ;; 	       (("# Options: dynamic, lhapdf") (string-append "LDFLAGS += -L" fortran "/lib \n# Options: dynamic, lhapdf")))
+	  (invoke "bash" "-c" (string-append "cp -r ./* " out))
+	  (chdir out)
 
-	  ;; lhapdf links to boost ?
-	  (substitute* '("MG5_aMC_v2_7_0/Template/LO/Source/make_opts"
-			 "MG5_aMC_v2_7_0/Template/NLO/Source/make_opts.inc")
-	  	       (("ifneq \\(\\$\\(lhapdf\\),\\)\n")
-			(string-append "ifneq ($(lhapdf),)\nCXXFLAGS += -I" boost "/include -I"
-				       headers "/include -I"
-				       libtirpc "/include/tirpc\n")))
-
-	  (substitute* '("MG5_aMC_v2_7_0/bin/mg5" "MG5_aMC_v2_7_0/bin/mg5_aMC")
+	  (substitute* (append (find-files "Template/LO/bin" "$")
+	  		       (find-files "Template/MadWeight/bin" "$")
+	  		       (find-files "Template/NLO/bin" "$")
+	  		       (find-files "Template/Common/bin" "$")
+	  		       (find-files "Template/NLO/SubProcesses/" ".*sh$")
+	  		       (find-files "Template/NLO/SubProcesses/ajob_template" "$")
+			       (find-files "bin/" "$")
+	  		       ;; (find-files "./" ".*py$")
+	  		       (find-files "Template/LO/SubProcesses/" ".*sh$"))
+	  	       (("/bin/bash") (string-append bash "/bin/bash"))
+	  	       (("#!/usr/bin/perl") (string-append "#!" perl "/bin/perl"))
 	  	       (("#! /usr/bin/env python")
 	  		(string-append "#!" python "/bin/python"))
-	  	       (("import os\n")
-	  		(string-append "import os\n"
-	  			       "os.environ[\"PATH\"] = \""
-	  			       fortran "/bin:"
-	  			       coreutils "/bin:"
-	  			       make "/bin:"
-	  			       sed "/bin:"
-	  			       grep "/bin:"
-	  			       tar "/bin:"
-	  			       bc "/bin:"
-	  			       gzip "/bin:"
-	  			       find "/bin:"
-	  			       gs "/bin:"
-	  			       gcc "/bin:\"+os.getenv(\"PATH\")\n"
-				       "os.environ[\"LIBRARY_PATH\"] = \""
-				       fortran "/lib:\""
-				       "+(os.getenv(\"LIBRARY_PATH\") or \"\")\n"
-				       "os.environ[\"FC\"] = \""
-				       fortran "/bin/gfortran\"\n"
-	  			       ;; "os.environ[\"LD_LIBRARY_PATH\"] = \""
-	  			       ;; fortran "/lib:"
-	  			       ;; gcc "/lib:\"+(os.getenv(\"LD_LIBRARY_PATH\") or \"\")\n"
-	  			       ;; "\n"
-	  			       ))
+	  	       (("#!/usr/bin/env python")
+	  		(string-append "#!" python "/bin/python"))
+	  	       (("#!/usr/bin/python")
+	  		(string-append "#!" python "/bin/python")))
+	  
+	  (for-each (lambda (prog)
+		      (wrap-program prog
+				    `("PATH" ":" = (,(getenv "PATH")))
+				    `("LIBRARY_PATH" ":" prefix (,(string-append fortran "/lib")))
+				    `("FC" ":" = (,(string-append fortran "/bin/gfortran")))
+				    ))
+		    '("bin/mg5" "bin/mg5_aMC"))
+
+	  ;; lhapdf links to boost ?
+	  (substitute* '("Template/LO/Source/make_opts"
+	  		 "Template/NLO/Source/make_opts.inc")
+	  	       (("ifneq \\(\\$\\(lhapdf\\),\\)\n")
+	  		(string-append "ifneq ($(lhapdf),)\nCXXFLAGS += -I" boost "/include -I"
+	  			       headers "/include -I"
+	  			       libtirpc "/include/tirpc\n")))
+	  
+	  ; fix permissions after copying files
+	  (substitute* '("madgraph/iolibs/export_v4.py" "madgraph/iolibs/export_fks.py")
+	  	       (("self.dir_path)\n")
+	  		"self.dir_path); os.system('chmod -R +w '+self.dir_path)\n"))
+	  (substitute* '("madgraph/iolibs/export_v4.py" "madgraph/iolibs/export_fks.py")
+	  	       (("dir_path, True)") "dir_path, True); os.system('chmod -R +w '+self.dir_path)"))
+	  (substitute* '("madgraph/iolibs/export_v4.py" "madgraph/iolibs/export_fks.py")
+	  	       (("internal/cluster.py')") "internal/cluster.py'); os.system('chmod -R +w '+self.dir_path)"))
+	  (substitute* '("madgraph/iolibs/export_v4.py" "madgraph/iolibs/export_fks.py")
+	  	       (("ignore=shutil.ignore_patterns\\(\\*IGNORE_PATTERNS\\)\\)") "ignore=shutil.ignore_patterns(*IGNORE_PATTERNS)); os.system('chmod -R +w '+self.dir_path)"))
+
+	  (substitute* "input/mg5_configuration.txt"
+	  	       (("# fortran_compiler = None")
+	  		(string-append "fortran_compiler = " fortran "/bin/gfortran"))
+	  	       (("# f2py_compiler = None")
+	  		(string-append "f2py_compiler = " numpy "/bin/f2py"))
+	  	       (("# cpp_compiler = None")
+	  		(string-append "cpp_compiler = " gcc "/bin/g++"))
+	  	       (("# pythia8_path = ./HEPTools/pythia8")
+	  		(string-append "pythia8_path = " pythia ))
+	  	       (("# hepmc_path = ")
+	  		(string-append "hepmc_path = " hepmc))
+	  	       (("# lhapdf = lhapdf-config")
+	  		(string-append "lhapdf = " lhapdf "/bin/lhapdf-config"))
+	  	       (("# fastjet = fastjet-config")
+	  		(string-append "fastjet = " fastjet "/bin/fastjet-config"))
 	  	       )
 	  
-	  (substitute* (append (find-files "MG5_aMC_v2_7_0/Template/LO/bin" "$")
-			       (find-files "MG5_aMC_v2_7_0/Template/MadWeight/bin" "$")
-			       (find-files "MG5_aMC_v2_7_0/Template/NLO/bin" "$")
-			       (find-files "MG5_aMC_v2_7_0/Template/Common/bin" "$")
-			       (find-files "MG5_aMC_v2_7_0/Template/NLO/SubProcesses/" ".*sh$")
-			       (find-files "MG5_aMC_v2_7_0/Template/NLO/SubProcesses/ajob_template" "$")
-			       ;; (find-files "MG5_aMC_v2_7_0/" ".*py$")
-			       (find-files "MG5_aMC_v2_7_0/Template/LO/SubProcesses/" ".*sh$"))
-		       (("/bin/bash") (string-append bash "/bin/bash"))
-		       (("#!/usr/bin/perl") (string-append "#!" perl "/bin/perl"))
-		       (("#! /usr/bin/env python")
-			(string-append "#!" python "/bin/python"))
-		       (("#!/usr/bin/env python")
-			(string-append "#!" python "/bin/python"))
-		       (("#!/usr/bin/python")
-			(string-append "#!" python "/bin/python")))
-	  ; fix permissions after copying files
-	  (substitute* '("MG5_aMC_v2_7_0/madgraph/iolibs/export_v4.py" "MG5_aMC_v2_7_0/madgraph/iolibs/export_fks.py")
-		       (("self.dir_path)\n")
-			"self.dir_path); os.system('chmod -R +w '+self.dir_path)\n"))
-	  (substitute* '("MG5_aMC_v2_7_0/madgraph/iolibs/export_v4.py" "MG5_aMC_v2_7_0/madgraph/iolibs/export_fks.py")
-		       (("dir_path, True)") "dir_path, True); os.system('chmod -R +w '+self.dir_path)"))
-	  (substitute* '("MG5_aMC_v2_7_0/madgraph/iolibs/export_v4.py" "MG5_aMC_v2_7_0/madgraph/iolibs/export_fks.py")
-		       (("internal/cluster.py')") "internal/cluster.py'); os.system('chmod -R +w '+self.dir_path)"))
-	  (substitute* '("MG5_aMC_v2_7_0/madgraph/iolibs/export_v4.py" "MG5_aMC_v2_7_0/madgraph/iolibs/export_fks.py")
-		       (("ignore=shutil.ignore_patterns\\(\\*IGNORE_PATTERNS\\)\\)") "ignore=shutil.ignore_patterns(*IGNORE_PATTERNS)); os.system('chmod -R +w '+self.dir_path)"))
+	  (substitute* "madgraph/iolibs/files.py"
+	  	       (("def rm\\(path")
+	  		"    os.system(\"chmod +w \"+path2)\ndef rm(path"))
 
-	  (substitute* "MG5_aMC_v2_7_0/input/mg5_configuration.txt"
-		       (("# fortran_compiler = None")
-			(string-append "fortran_compiler = " fortran "/bin/gfortran"))
-		       (("# f2py_compiler = None")
-			(string-append "f2py_compiler = " numpy "/bin/f2py"))
-		       (("# cpp_compiler = None")
-			(string-append "cpp_compiler = " gcc "/bin/g++"))
-		       (("# pythia8_path = ./HEPTools/pythia8")
-			(string-append "pythia8_path = " pythia ))
-		       (("# hepmc_path = ")
-			(string-append "hepmc_path = " hepmc))
-		       (("# lhapdf = lhapdf-config")
-			(string-append "lhapdf = " lhapdf "/bin/lhapdf-config"))
-		       (("# fastjet = fastjet-config")
-			(string-append "fastjet = " fastjet "/bin/fastjet-config"))
-		       ;; (("# run_mode = 2")
-		       ;; 	"run_mode = 0")
-		       )
-	  
-	  (substitute* "MG5_aMC_v2_7_0/madgraph/iolibs/files.py"
-		       (("import madgraph.various.misc as misc\n")
-			"import madgraph.various.misc as misc; print(\"failure\",why)\n")
-		       (("def rm\\(path")
-			"    os.system(\"chmod +w \"+path2)\ndef rm(path"))
+	  (substitute* "vendor/StdHEP/src/stdhep/GNUmakefile"
+	  	       (("INCS = ") (string-append "INCS = -I"
+	  					   headers "/include -I"
+	  					   libtirpc "/include/tirpc "))
+	  	       (("CFLAGS \\+= ") (string-append "CFLAGS += -I"
+	  						headers "/include -I"
+	  						libtirpc "/include/tirpc "))
+	  	       )
+	  (substitute* "vendor/StdHEP/mcfio/src/GNUmakefile"
+	  	       (("FINC = ") (string-append
+	  			     "FINC = -I"
+	  			     headers "/include -I"
+	  			     libtirpc "/include/tirpc "))
+	  	       (("CINC = ") (string-append
+	  			     "CINC = -I"
+	  			     headers "/include -I"
+	  			     libtirpc "/include/tirpc "))
+	  	       )
 
-	  (substitute* "MG5_aMC_v2_7_0/vendor/StdHEP/src/stdhep/GNUmakefile"
-		       (("INCS = ") (string-append "INCS = -I"
-						   headers "/include -I"
-						   libtirpc "/include/tirpc "))
-		       (("CFLAGS \\+= ") (string-append "CFLAGS += -I"
-							headers "/include -I"
-							libtirpc "/include/tirpc "))
-		       )
-	  (substitute* "MG5_aMC_v2_7_0/vendor/StdHEP/mcfio/src/GNUmakefile"
-		       (("FINC = ") (string-append
-				     "FINC = -I"
-				     headers "/include -I"
-				     libtirpc "/include/tirpc "))
-		       (("CINC = ") (string-append
-				     "CINC = -I"
-				     headers "/include -I"
-				     libtirpc "/include/tirpc "))
-		       )
-
-	  (substitute* "MG5_aMC_v2_7_0/Template/NLO/SubProcesses/makefile_fks_dir"
-		       (("-I\\.") (string-append "-I" headers "/include -I.")))
+	  (substitute* "Template/NLO/SubProcesses/makefile_fks_dir"
+	  	       (("-I\\.") (string-append "-I" headers "/include -I.")))
 
 	  ;; mg5-pythia8 interface
-	  (invoke (string-append bash "/bin/bash") "-c"
-		  (string-append
-		   "export PATH=" gzip "/bin:" wget "/bin:" coreutils "/bin:" python "/bin:" gcc "/bin:" make "/bin:" bash "/bin:" fortran "/bin:" tar "/bin && "
-		   "mkdir -p MG5_aMC_v2_7_0/HEPTools && tar -C MG5_aMC_v2_7_0/HEPTools -xf MG5_aMC_v2_7_0/vendor/OfflineHEPToolsInstaller.tar.gz &&"
-		   "mkdir -p MG5_aMC_v2_7_0/HEPTools/MG5aMC_PY8_interface && tar -C MG5_aMC_v2_7_0/HEPTools/MG5aMC_PY8_interface --strip=1 -xf " mg5amc-py8))	  
+	  (mkdir-p "HEPTools/MG5aMC_PY8_interface")
+	  (invoke "tar" "-C" "HEPTools" "-xf" "vendor/OfflineHEPToolsInstaller.tar.gz")
+	  (invoke "tar" "-C" "HEPTools/MG5aMC_PY8_interface" "--strip=1" "-xf" mg5amc-py8)
 
-	  (substitute* "MG5_aMC_v2_7_0/HEPTools/MG5aMC_PY8_interface/Makefile_mg5amc_py8_interface_static"
-		       (("-I\\$\\(HEPMC2_INCLUDE\\)") (string-append "-I$(HEPMC2_INCLUDE) -I"
-						   headers "/include -I"
-						   libtirpc "/include/tirpc "))
+	  (substitute* "HEPTools/MG5aMC_PY8_interface/Makefile_mg5amc_py8_interface_static"
+	  	       (("-I\\$\\(HEPMC2_INCLUDE\\)") (string-append "-I$(HEPMC2_INCLUDE) -I"
+	  					   headers "/include -I"
+	  					   libtirpc "/include/tirpc "
+						   "-L" gcc "/lib -Wl,-rpath," gcc "/lib "))
+	  	       )
+	  (substitute* "HEPTools/MG5aMC_PY8_interface/MG5aMC_PY8_interface.cc"
+	  	       (("\\\\\\%") "%")
+	  	       ;; (("Pythia pythia;") (string-append "Pythia pythia(\"" pythia "/share/Pythia8/xmldoc\");"))
 		       )
-	  (substitute* "MG5_aMC_v2_7_0/HEPTools/MG5aMC_PY8_interface/MG5aMC_PY8_interface.cc"
-		       (("\\\\\\%") "%"))
 
-	  (invoke (string-append bash "/bin/bash") "-c"
-		  (string-append
-		   "export PATH=" gzip "/bin:" wget "/bin:" coreutils "/bin:" python "/bin:" gcc "/bin:" make "/bin:" bash "/bin:" fortran "/bin:" tar "/bin && "
-		   "export LIBRARY_PATH=" gcc "/lib &&"
-		   "cd MG5_aMC_v2_7_0/HEPTools/MG5aMC_PY8_interface && python compile.py " pythia " && cd - &&"
-		   "echo DONE"))
+	  (invoke "bash" "-c"
+	  	  (string-append
+	  	   "cd HEPTools/MG5aMC_PY8_interface && python compile.py " pythia " && cd -"))
 
-	  (substitute* "MG5_aMC_v2_7_0/input/mg5_configuration.txt"
-		       (("# mg5amc_py8_interface_path = ./HEPTools/MG5aMC_PY8_interface")
-			(string-append "mg5amc_py8_interface_path = " out "/HEPTools/MG5aMC_PY8_interface")))
-
-	  (substitute* "MG5_aMC_v2_7_0/input/mg5_configuration.txt"
-		       (("# mg5amc_py8_interface_path = ./HEPTools/MG5aMC_PY8_interface")
-			(string-append "mg5amc_py8_interface_path = " out "/HEPTools/MG5aMC_PY8_interface")))
+	  (substitute* "input/mg5_configuration.txt"
+	  	       (("# mg5amc_py8_interface_path = ./HEPTools/MG5aMC_PY8_interface")
+	  		(string-append "mg5amc_py8_interface_path = " out "/HEPTools/MG5aMC_PY8_interface")))
 	  
 	  ;; ma5
-	  (invoke (string-append bash "/bin/bash") "-c"
-		  (string-append
-		   "export PATH=" gzip "/bin:" wget "/bin:" coreutils "/bin:" python "/bin:" gcc "/bin:" make "/bin:" bash "/bin:" fortran "/bin:" tar "/bin && "
-		   "mkdir -p MG5_aMC_v2_7_0/HEPTools && "
-		   "mkdir -p MG5_aMC_v2_7_0/HEPTools/ && tar -C MG5_aMC_v2_7_0/HEPTools/ -xf " ma5))
+	  (invoke "tar" "-C" "HEPTools/" "-xf" ma5)
 
 	  ; veto everything (for now)
-	  (substitute* "MG5_aMC_v2_7_0/HEPTools/madanalysis5/madanalysis/input/installation_options.dat"
-		       (("# webaccess_veto = 0") "webaccess_veto = 1")
-		       (("# root_veto     = 0") "root_veto = 1")
-		       (("# matplotlib_veto = 0") "matplotlib_veto = 1")
-		       (("# delphes_veto     = 0") "delphes_veto = 1")
-		       (("# delphesMA5tune_veto     = 0") "delphesMA5tune_veto = 1")
-		       (("# latex_veto     = 0") "latex_veto = 1")
-		       (("# pdflatex_veto     = 0") "pdflatex_veto = 1")
-		       (("# fastjet_veto     = 0") "fastjet_veto = 1")
-		       (("# zlib_veto     = 0") "zlib_veto = 1")
-		       (("# scipy_veto = 0") "scipy_veto = 1")
-		       )
+	  (substitute* "HEPTools/madanalysis5/madanalysis/input/installation_options.dat"
+	  	       (("# webaccess_veto.*") "webaccess_veto = 1\n")
+	  	       (("# root_veto.*") "root_veto = 1\n")
+	  	       (("# matplotlib_veto.*") "matplotlib_veto = 1\n")
+	  	       (("# delphes_veto.*") "delphes_veto = 1\n")
+	  	       (("# delphesMA5tune_veto.*") "delphesMA5tune_veto = 1\n")
+	  	       (("# latex_veto.*") "latex_veto = 1\n")
+	  	       (("# pdflatex_veto.*") "pdflatex_veto = 1\n")
+	  	       (("# fastjet_veto.*") "fastjet_veto = 1\n")
+	  	       (("# scipy_veto.*") "scipy_veto = 1\n")
+	  	       )
 
-	  (substitute* "MG5_aMC_v2_7_0/HEPTools/madanalysis5/madanalysis/build/makefile_writer.py"
-		       (("cxxflags.extend\\(\\['-Wall'")
-			(string-append
-			 "file.write('LIBRARY_PATH=" gcc "/lib\\n')\n        "
-			 "cxxflags.extend(['-I" headers "/include', '-I" libtirpc "/include/tirpc', '-Wall'"))
-		       (("libs.extend\\(\\['-lz'\\]\\)") (string-append "libs.extend(['-L" zlib "/lib', '-lz'])"))
-		       )
-		   
-	  (invoke (string-append bash "/bin/bash") "-c"
-		  (string-append
-		   "export PATH=" gzip "/bin:" fastjet "/bin:" which "/bin:" wget "/bin:" coreutils "/bin:" python "/bin:" gcc "/bin:" make "/bin:" bash "/bin:" fortran "/bin:" tar "/bin && "
-		   "python MG5_aMC_v2_7_0/HEPTools/HEPToolsInstallers/installMadAnalysis5.py --ma5_path=$PWD/MG5_aMC_v2_7_0/HEPTools/madanalysis5 --mg5_path=MG5_aMC_v2_7_0/ --zlib=" zlib
-		   "&& echo DONE"))
+	  (substitute* "HEPTools/madanalysis5/madanalysis/build/makefile_writer.py"
+	  	       (("cxxflags.extend\\(\\['-Wall'")
+	  		(string-append
+	  		 "cxxflags.extend(['-I" headers "/include', '-I" libtirpc "/include/tirpc', '-Wall'"))
+	  	       (("libs.extend\\(\\['-lz'\\]\\)") (string-append "libs.extend(['-L" zlib "/lib', '-lz'])"))
+	  	       )
 
+	  (invoke "python" "HEPTools/HEPToolsInstallers/installMadAnalysis5.py"
+		  (string-append "--ma5_path=" out "/HEPTools/madanalysis5/")
+		  (string-append "--mg5_path=" out "/")
+		  (string-append "--zlib=" zlib))
+
+	  ;; Compile NLO libraries
 	  (invoke (string-append bash "/bin/bash") "-c"
-		  (string-append
-		   "export PATH=" gzip "/bin:" wget "/bin:" coreutils "/bin:" python "/bin:" gcc "/bin:" make "/bin:" bash "/bin:" fortran "/bin:" tar "/bin && "
-		   "export LIBRARY_PATH=" gcc "/lib &&"
-		   "(echo "
-		   " \"generate p p > Z [QCD] \noutput abcd\n\n\" "
-		   " | "
-		   python "/bin/python MG5_aMC_v2_7_0/bin/mg5_aMC)"))
+	  	  (string-append
+	  	   "(echo \""
+	  	   "generate p p > Z [QCD]\n"
+		   "output abcd\n\n"
+	  	   "\" | bin/mg5_aMC)"))
+	  (invoke "rm" "-rf" "abcd")
 
 	  ; example of adding an additional model
-	  (invoke (string-append bash "/bin/bash") "-c"
-		  (string-append
-		   "export PATH=" gzip "/bin:" wget "/bin:" coreutils "/bin:" python "/bin:" gcc "/bin:" make "/bin:" bash "/bin:" fortran "/bin:" tar "/bin && "
-		   "tar -C MG5_aMC_v2_7_0/models -xf " zprime))
-	  
-	  ; finally we're done, copy to the output directory
-	  (invoke (string-append bash "/bin/bash") "-c"
-		  (string-append coreutils "/bin/cp -r MG5_aMC_v2_7_0/* " out))
+	  (invoke "tar" "-C" "models" "-xf" zprime)
 	  )))
     ; madanalysis5
     ;http://madanalysis.irmp.ucl.ac.be/raw-attachment/wiki/MA5SandBox/ma5_latest.tgz
