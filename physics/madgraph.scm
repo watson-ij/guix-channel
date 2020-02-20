@@ -84,14 +84,14 @@
 		    ;; (uri "https://launchpad.net/madanalysis5/trunk/v1.6/+download/ma5_v1.6.tgz")
 		    ;; (sha256 (base32 "1dy9vqvxvgm53n6nz8pf6x8xbxibhlfkca1x5jvfgcwhq7hw2h4m"))
 		    ))
+	     
 					; input list http://madgraph.phys.ucl.ac.be/package_info.dat
 	     ("mg5amc_py8"
 	      ,(origin
 		(method url-fetch)
 		(uri "http://madgraph.phys.ucl.ac.be/Downloads/MG5aMC_PY8_interface/MG5aMC_PY8_interface_V1.0.tar.gz")
 		(sha256 (base32
-			 "0n5phf2q9jlbxa8rnrqd7v5z9bc7k7hczz7vlx5bfkn1na27bijl"
-			 ;"1kyw6rcf13g2ca8jy1qgfnmjqjsrxlq0lp1bdy88wcz2qvh4zrg1"
+			 "1l1fxpa279vm6la4h79wpnqf1vydqrbrp93la1ybymfkq1yqzgc1"
 			 ))))
 
 					; example of adding an additional model
