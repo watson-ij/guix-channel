@@ -165,11 +165,16 @@
 
 	  (substitute* (append (find-files "Template/LO/bin" "$")
 	  		       (find-files "Template/MadWeight/bin" "$")
+	  		       (find-files "Template/MadWeight" "py$")
 	  		       (find-files "Template/NLO/bin" "$")
 	  		       (find-files "Template/Common/bin" "$")
 	  		       (find-files "Template/NLO/SubProcesses/" ".*sh$")
 	  		       (find-files "Template/NLO/SubProcesses/ajob_template" "$")
+	  		       (find-files "Template/NLO/MCatNLO/Scripts/" "$")
+	  		       (find-files "Template/NLO/MCatNLO/" "sh$")
+	  		       (find-files "Template/NLO/MCatNLO/" "inputs$")
 			       (find-files "bin/" "$")
+			       (find-files "MadSpin/" "$")
 	  		       ;; (find-files "./" ".*py$")
 	  		       (find-files "Template/LO/SubProcesses/" ".*sh$"))
 	  	       (("/bin/bash") (string-append bash "/bin/bash"))
@@ -188,6 +193,7 @@
 				    `("FC" ":" = (,(string-append fortran "/bin/gfortran")))
 				    ))
 		    '("bin/mg5" "bin/mg5_aMC"))
+	  (substitute* "bin/.mg5-real" (("mg5_aMC") ".mg5_aMC-real"))
 
 	  ;; lhapdf links to boost ?
 	  (substitute* '("Template/LO/Source/make_opts"
