@@ -338,19 +338,27 @@
 	  	       (("# madanalysis5_path = ./HEPTools/madanalysis5/madanalysis5")
 	  		(string-append "madanalysis5_path = " out "/HEPTools/madanalysis5")))
 
+	  (substitute* (append (find-files "HEPTools/madanalysis5/bin" "$") )
+	  	       (("/bin/bash") (string-append bash "/bin/bash"))
+	  	       (("#!/usr/bin/perl") (string-append "#!" perl "/bin/perl"))
+	  	       (("#! /usr/bin/env python")
+	  		(string-append "#!" python "/bin/python"))
+	  	       (("#!/usr/bin/env python")
+	  		(string-append "#!" python "/bin/python"))
+	  	       (("#!/usr/bin/python")
+	  		(string-append "#!" python "/bin/python")))
+
 	  ;; delphes
 	  (substitute* "input/mg5_configuration.txt"
 	  	       (("# delphes_path = ./Delphes")
 	  		(string-append "delphes_path = " delphes)))
 
-	  ;; Compile NLO libraries
-	  (invoke (string-append bash "/bin/bash") "-c"
-	  	  (string-append
-	  	   "(echo \""
-	  	   "generate p p > Z [QCD]\n"
-		   "output abcd\n\n"
-	  	   "\" | bin/mg5_aMC)"))
+	  ;; compile nlo libraries, then clean up
+	  (invoke "bash" "-c" "bin/mg5_aMC < <(echo \"generate p p > Z [QCD]\noutput abcd\n\n\")")
 	  (invoke "rm" "-rf" "abcd")
+	  (invoke "mv" "README" "VERSION" "UpdateNotes.txt" "proc_card.dat" "madgraph")
+	  (invoke "rm" "-rf" "INSTALL" "LICENSE" "py.py" "py.pyc" "py.pyo" "additional_command")
+	  (invoke "mv" "doc.tgz" "doc")
 
 	  ; example of adding an additional model
 	  (invoke "tar" "-C" "models" "-xf" zprime)
