@@ -3,6 +3,7 @@
   #:use-module (physics hepmc)
   #:use-module (physics lhapdf)
   #:use-module (physics fastjet)
+  #:use-module (physics delphes)
   #:use-module (guix packages)
   #:use-module (guix download)
   #:use-module (guix build-system trivial)
@@ -67,6 +68,7 @@
 	     ("numpy" ,python2-numpy)
 	     ("hepmc" ,hepmc)
 	     ("fastjet" ,fastjet)
+	     ("delphes" ,delphes)
 	     ("lhapdf" ,lhapdf)
 	     ("pythia" ,pythia)
 	     ("fortran" ,gfortran-toolchain)
@@ -90,8 +92,27 @@
 		    ;; (uri "https://launchpad.net/madanalysis5/trunk/v1.6/+download/ma5_v1.6.tgz")
 		    ;; (sha256 (base32 "1dy9vqvxvgm53n6nz8pf6x8xbxibhlfkca1x5jvfgcwhq7hw2h4m"))
 		    ))
-	     
-					; input list http://madgraph.phys.ucl.ac.be/package_info.dat
+
+	     ;; input list http://madgraph.phys.ucl.ac.be/package_info.dat
+	     ;; MG5aMC_PY8_interface http://madgraph.phys.ucl.ac.be/Downloads/MG5aMC_PY8_interface/MG5aMC_PY8_interface_V1.0.tar.gz
+	     ;; QCDLoop http://madgraph.phys.ucl.ac.be/Downloads/qcdloop1-1.9.0.tar.gz
+	     ;; Delphes3 http://cp3.irmp.ucl.ac.be/downloads/Delphes-3-current.tar.gz
+	     ;; Delphes2 http://cp3.irmp.ucl.ac.be/downloads/Delphes-2-current.tar.gz
+	     ;; MCatNLO-utilities http://madgraph.phys.ucl.ac.be/Downloads/MCatNLO-utilities_V3.6.tar.gz
+	     ;; SysCalc http://madgraph.phys.ucl.ac.be/Downloads/SysCalc_V1.1.7.tar.gz
+	     ;; maddump http://madgraph.phys.ucl.ac.be/Downloads/maddump/maddump_V1.0.4.tar.gz
+	     ;; MadAnalysis http://madgraph.phys.ucl.ac.be/Downloads/MadAnalysis_V1.1.8.tar.gz
+	     ;; Golem95 https://www.hepforge.org/archive/golem/golem95-1.3.1.tar.gz
+	     ;; pythia-pgs http://madgraph.phys.ucl.ac.be/Downloads/pythia-pgs_V2.4.5.tar.gz
+	     ;; lhapdf http://www.hepforge.org/archive/lhapdf/lhapdf-5.9.1.tar.gz
+	     ;; rosetta http://madgraph.phys.ucl.ac.be/Downloads/rosetta/rosetta_V2.1.tar.gz
+	     ;; Delphes http://cp3.irmp.ucl.ac.be/downloads/Delphes-2-current.tar.gzDelphes_V_2.0.3.tar.gz
+	     ;; HEPToolsInstaller http://madgraph.phys.ucl.ac.be/Downloads/HEPToolsInstaller/HEPToolsInstaller_V126.tar.gz
+	     ;; PPPC4DMID http://madgraph.phys.ucl.ac.be/Downloads/maddm/PPPC4DMID_V1.9.tar.gz
+	     ;; MadAnalysis5 http://madanalysis.irmp.ucl.ac.be/raw-attachment/wiki/PhysicsAnalysisDatabase/MadAnalysis5-current.tgz
+	     ;; maddm http://madgraph.phys.ucl.ac.be/Downloads/maddm/maddm_V3.0.7.tar.gz
+	     ;; PJFry http://madgraph.phys.ucl.ac.be/Downloads/pjfry-1.1.0-beta2.tar.gz
+	     ;; ExRootAnalysis http://madgraph.phys.ucl.ac.be/Downloads/ExRootAnalysis/ExRootAnalysis_V1.1.5.tar.gz
 	     ("mg5amc_py8"
 	      ,(origin
 		(method url-fetch)
@@ -137,6 +158,7 @@
 	       (sed (assoc-ref %build-inputs "sed"))
 	       (zlib (assoc-ref %build-inputs "zlib"))
 	       (headers (assoc-ref %build-inputs "headers"))
+	       (delphes (assoc-ref %build-inputs "delphes"))
 	       (which (assoc-ref %build-inputs "which"))
 	       (libtirpc (assoc-ref %build-inputs "libtirpc"))
 	       (grep (assoc-ref %build-inputs "grep"))
@@ -308,6 +330,15 @@
 		  (string-append "--ma5_path=" out "/HEPTools/madanalysis5/")
 		  (string-append "--mg5_path=" out "/")
 		  (string-append "--zlib=" zlib))
+	  
+	  (substitute* "input/mg5_configuration.txt"
+	  	       (("# madanalysis5_path = ./HEPTools/madanalysis5/madanalysis5")
+	  		(string-append "madanalysis5_path = " out "/HEPTools/madanalysis5")))
+
+	  ;; delphes
+	  (substitute* "input/mg5_configuration.txt"
+	  	       (("# delphes_path = ./Delphes")
+	  		(string-append "delphes_path = " delphes)))
 
 	  ;; Compile NLO libraries
 	  (invoke (string-append bash "/bin/bash") "-c"
