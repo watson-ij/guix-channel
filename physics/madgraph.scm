@@ -6,7 +6,7 @@
   #:use-module (guix packages)
   #:use-module (guix download)
   #:use-module (guix build-system trivial)
-  #:use-module (guix licenses)
+  #:use-module ((guix licenses) #:prefix licenses:)
   #:use-module (gnu packages algebra)
   #:use-module (gnu packages base)
   #:use-module (gnu packages bash)
@@ -89,10 +89,13 @@
 	     ("mg5amc_py8"
 	      ,(origin
 		(method url-fetch)
-		(uri "http://madgraph.phys.ucl.ac.be/Downloads/MG5aMC_PY8_interface/MG5aMC_PY8_interface_V1.0.tar.gz")
-		(sha256 (base32
-			 "1l1fxpa279vm6la4h79wpnqf1vydqrbrp93la1ybymfkq1yqzgc1"
-			 ))))
+		; the madgraph site seems to have some kind of counter that ruins the sha, so take it from a github clone
+		(uri "https://github.com/HEPcodes/MG5aMC_PY8_interface/archive/c1b01c2721826ccd6eb0f583d9b6ea77df1a320e.tar.gz")
+		(sha256 (base32 "17iygvphaks9dk22pfmwqi12gjznlvzmdlrycwlbdrjfwz64r38y"))
+		;; (uri "http://madgraph.phys.ucl.ac.be/Downloads/MG5aMC_PY8_interface/MG5aMC_PY8_interface_V1.0.tar.gz")
+		;; (sha256 (base32
+		;; 	 "1l1fxpa279vm6la4h79wpnqf1vydqrbrp93la1ybymfkq1yqzgc1"))
+		))
 
 					; example of adding an additional model
 	     ("zprime"
@@ -269,7 +272,7 @@
 		  (string-append
 		   "export PATH=" gzip "/bin:" wget "/bin:" coreutils "/bin:" python "/bin:" gcc "/bin:" make "/bin:" bash "/bin:" fortran "/bin:" tar "/bin && "
 		   "mkdir -p MG5_aMC_v2_7_0/HEPTools && tar -C MG5_aMC_v2_7_0/HEPTools -xf MG5_aMC_v2_7_0/vendor/OfflineHEPToolsInstaller.tar.gz &&"
-		   "mkdir -p MG5_aMC_v2_7_0/HEPTools/MG5aMC_PY8_interface && tar -C MG5_aMC_v2_7_0/HEPTools/MG5aMC_PY8_interface -xf " mg5amc-py8))	  
+		   "mkdir -p MG5_aMC_v2_7_0/HEPTools/MG5aMC_PY8_interface && tar -C MG5_aMC_v2_7_0/HEPTools/MG5aMC_PY8_interface --strip=1 -xf " mg5amc-py8))	  
 
 	  (substitute* "MG5_aMC_v2_7_0/HEPTools/MG5aMC_PY8_interface/Makefile_mg5amc_py8_interface_static"
 		       (("-I\\$\\(HEPMC2_INCLUDE\\)") (string-append "-I$(HEPMC2_INCLUDE) -I"
@@ -355,6 +358,6 @@
    (synopsis "MadGraph5_aMC@NLO")
    (description "
 MadGraph5_aMC@NLO is a framework that aims at providing all the elements necessary for SM and BSM phenomenology, such as the computations of cross sections, the generation of hard events and their matching with event generators, and the use of a variety of tools relevant to event manipulation and analysis. Processes can be simulated to LO accuracy for any user-defined Lagrangian, an the NLO accuracy in the case of models that support this kind of calculations -- prominent among these are QCD and EW corrections to SM processes. Matrix elements at the tree- and one-loop-level can also be obtained.")
-   (license bsd-3)
+   (license licenses:bsd-3)
    ))
 madgraph
