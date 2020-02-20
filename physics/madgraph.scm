@@ -8,6 +8,7 @@
   #:use-module (guix build-system trivial)
   #:use-module ((guix licenses) #:prefix licenses:)
   #:use-module (gnu packages algebra)
+  #:use-module (gnu packages gawk)
   #:use-module (gnu packages base)
   #:use-module (gnu packages bash)
   #:use-module (gnu packages boost)
@@ -75,7 +76,7 @@
 	     ("grep" ,grep)
 	     ("headers" ,linux-libre-headers)
 	     ("gs" ,ghostscript)
-	     ("awk" ,awk)
+	     ("awk" ,gawk)
 	     ("which" ,which)
 	     ("gcc" ,gcc-toolchain)
 
