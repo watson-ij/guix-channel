@@ -1,5 +1,6 @@
 (define-module (physics pythia)
   #:use-module (physics hepmc)
+  #:use-module (physics lhapdf)
   #:use-module (guix packages)
   #:use-module (guix download)
   #:use-module (guix build-system gnu)
@@ -29,8 +30,10 @@
 	     ("bash" ,bash)
 	     ("zlib" ,zlib)
 	     ("hepmc" ,hepmc)
+	     ("lhapdf" ,lhapdf)
 	     ))
    (arguments `(#:configure-flags (list (string-append "--with-hepmc2=" (assoc-ref %build-inputs "hepmc"))
+					(string-append "--with-lhapdf6=" (assoc-ref %build-inputs "lhapdf"))
 					(string-append "--with-gzip=" (assoc-ref %build-inputs "zlib")))
 		#:phases
 		(modify-phases
@@ -41,3 +44,4 @@
    (home-page "https://cp3.irmp.ucl.ac.be/projects/pythia")
    (license licenses:cc-by-sa4.0)
    ))
+pythia
