@@ -109,9 +109,9 @@
 				      (source (assoc-ref %build-inputs "source"))
 				      (tar (assoc-ref %build-inputs "tar"))
 				      (gzip (assoc-ref %build-inputs "gzip")))
-				 (mkdir-p out 
+				 (mkdir-p out)
 				 (setenv "PATH" (string-append gzip "/bin"))
-				 (invoke (string-append tar "/bin/tar") "-C" out "-xf" source)))
+				 (invoke (string-append tar "/bin/tar") "-C" out "-xf" source)
 			     ))
       (synopsis "A PDF")
       (description "A PDF")
