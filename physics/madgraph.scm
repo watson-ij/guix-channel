@@ -82,6 +82,7 @@
 	     ("gs" ,ghostscript)
 	     ("awk" ,gawk)
 	     ("which" ,which)
+	     ("gnuplot" ,gnuplot)
 	     ("gcc" ,gcc-toolchain)
 
 	     ;; from the offline heptools file
@@ -172,6 +173,7 @@
 	       (ma5 (assoc-ref %build-inputs "ma5"))
 	       (hepmc (assoc-ref %build-inputs "hepmc"))
 	       (fastjet (assoc-ref %build-inputs "fastjet"))
+	       (gnuplot (assoc-ref %build-inputs "gnuplot"))
 	       (source (assoc-ref %build-inputs "source"))
 	       (zprime (assoc-ref %build-inputs "zprime"))
 	       (coreutils (assoc-ref %build-inputs "coreutils")))
@@ -179,7 +181,7 @@
 	  (setenv "PATH" (string-append coreutils "/bin:" gzip "/bin:" gcc "/bin:" fortran "/bin:"
 					python "/bin:" wget "/bin:" make "/bin:" tar "/bin:" root "/bin:"
 					gs "/bin:" find "/bin:" sed "/bin:" grep "/bin:" awk "/bin:"
-					bc "/bin:" which "/bin:" fastjet "/bin:" bash "/bin"))
+					bc "/bin:" which "/bin:" gnuplot "/bin:" fastjet "/bin:" bash "/bin"))
 	  (setenv "LIBRARY_PATH" (string-append gcc "/lib"))
 	  (invoke "tar" "-xf" source)
 	  (chdir "MG5_aMC_v2_6_7")
