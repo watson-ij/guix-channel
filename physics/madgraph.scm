@@ -30,6 +30,7 @@
   #:use-module (gnu packages gl)
   #:use-module (gnu packages wget)
   #:use-module (gnu packages gcc)
+  #:use-module (gnu packages less)
   #:use-module (gnu packages linux)
   #:use-module (gnu packages ghostscript)
   #:use-module (gnu packages python-xyz)
@@ -78,6 +79,7 @@
 	     ("zlib" ,zlib)
 	     ("sed" ,sed)
 	     ("grep" ,grep)
+	     ("less" ,less)
 	     ("headers" ,linux-libre-headers)
 	     ("gs" ,ghostscript)
 	     ("awk" ,gawk)
@@ -168,6 +170,7 @@
 	       (gs (assoc-ref %build-inputs "gs"))
 	       (root (assoc-ref %build-inputs "root"))
 	       (awk (assoc-ref %build-inputs "awk"))
+	       (less (assoc-ref %build-inputs "less"))
 	       (pythia (assoc-ref %build-inputs "pythia"))
 	       (mg5amc-py8 (assoc-ref %build-inputs "mg5amc_py8"))
 	       (ma5 (assoc-ref %build-inputs "ma5"))
@@ -180,7 +183,7 @@
 	  (mkdir-p out)
 	  (setenv "PATH" (string-append coreutils "/bin:" gzip "/bin:" gcc "/bin:" fortran "/bin:"
 					python "/bin:" wget "/bin:" make "/bin:" tar "/bin:" root "/bin:"
-					gs "/bin:" find "/bin:" sed "/bin:" grep "/bin:" awk "/bin:"
+					gs "/bin:" find "/bin:" sed "/bin:" grep "/bin:" awk "/bin:" less "/bin:"
 					bc "/bin:" which "/bin:" gnuplot "/bin:" fastjet "/bin:" bash "/bin"))
 	  (setenv "LIBRARY_PATH" (string-append gcc "/lib"))
 	  (invoke "tar" "-xf" source)
