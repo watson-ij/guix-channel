@@ -7,6 +7,7 @@
   #:use-module ((guix licenses) #:prefix licenses:)
   #:use-module (gnu packages base)
   #:use-module (gnu packages bash)
+  #:use-module (gnu packages python)
   #:use-module (gnu packages commencement)
   #:use-module (gnu packages compression)
   #:use-module (gnu packages rsync))
@@ -31,9 +32,13 @@
 	     ("zlib" ,zlib)
 	     ("hepmc" ,hepmc)
 	     ("lhapdf" ,lhapdf)
+	     ("python" ,python-2.7)
 	     ))
    (arguments `(#:configure-flags (list (string-append "--with-hepmc2=" (assoc-ref %build-inputs "hepmc"))
 					(string-append "--with-lhapdf6=" (assoc-ref %build-inputs "lhapdf"))
+					(string-append "--with-python=" (assoc-ref %build-inputs "python"))
+					(string-append "--with-python-bin=" (assoc-ref %build-inputs "python") "/bin/")
+					(string-append "--with-python-include=" (assoc-ref %build-inputs "python") "/include/python2.7/")
 					(string-append "--with-gzip=" (assoc-ref %build-inputs "zlib")))
 		#:phases
 		(modify-phases
