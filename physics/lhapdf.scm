@@ -74,7 +74,14 @@
              (wrap-program (string-append out "/bin/lhapdf")
                `("PYTHONPATH" ":" prefix (,(string-append out "/lib/python2.7/site-packages"))))
              #t)))
-      )))
+       )))
+   (native-search-paths
+    ;; This is a Guix-specific environment variable that takes a single
+    ;; entry, not an actual search path.
+    (list (search-path-specification
+	   (variable "LHAPDF_DATA_PATH")
+	   (separator #f)
+	   (files '("share/LHAPDF")))))
    (synopsis "LHAPDF is a general purpose C++ interpolator, used for evaluating PDFs from discretised data files.")
    (description "LHAPDF is a general purpose C++ interpolator, used for evaluating PDFs from discretised data files.")
    (home-page "https://lhapdf.hepforge.org/")
@@ -98,11 +105,11 @@
 			     #:builder
 			     (begin
 			       (use-modules (guix build utils))
-			       (let* ((out (assoc-ref %outputs "out"))
+			       (let* ((out (string-append (assoc-ref %outputs "out") "/share/LHAPDF"))
 				      (source (assoc-ref %build-inputs "source"))
 				      (tar (assoc-ref %build-inputs "tar"))
 				      (gzip (assoc-ref %build-inputs "gzip")))
-				 (mkdir-p out)
+				 (mkdir-p out 
 				 (setenv "PATH" (string-append gzip "/bin"))
 				 (invoke (string-append tar "/bin/tar") "-C" out "-xf" source)))
 			     ))
@@ -116,37 +123,4 @@
 (pdf-package NNPDF23_nlo_as_0119_qed "0rayscazcacy89lzg0ynpwrl9g4pnjwwp0l0vwc3gjz9cwznmwsk")
 (pdf-package NNPDF23_lo_as_0130_qed "0qsxxw3nds42924xqnhs56wmd8ihmrip28glj47q9r9i3kgw3lv0")
 
-(define-public pdfsets
-  (package
-   (name "pdfsets")
-   (version "")
-   ; we seem to need something here
-   (source (origin
-	    (method url-fetch)
-	    (uri "http://lhapdfsets.web.cern.ch/lhapdfsets/current/pdfsets.index")
-	    (sha256 (base32 "12iwrrwi0iapn5l1pmr6i6rg3493m0xmanqyqh9fifjhpqrr4m7v"))))
-   (inputs `(("CT10" ,CT10)
-	     ("NNPDF23_nlo_as_0119_qed" ,NNPDF23_nlo_as_0119_qed)
-	     ("NNPDF23_lo_as_0130_qed" ,NNPDF23_lo_as_0130_qed)
-	     ("NNPDF31_nnlo_hessian_pdfas" ,NNPDF31_nnlo_hessian_pdfas)))
-   (build-system trivial-build-system)
-   (arguments `(#:modules
-		((guix build utils))
-		#:builder
-		(begin
-		  (use-modules (guix build utils))
-		  (mkdir-p (assoc-ref %outputs "out"))
-		  (chdir (assoc-ref %outputs "out"))
-		  (for-each
-		   (lambda (b)
-		     (if (string=? "source" (car b))
-			 (symlink (cdr b) "pdfsets.index")
-		     (symlink (string-append (cdr b) "/" (car b)) (car b))))
-		   %build-inputs))))
-   (home-page "https://lhapdf.hepforge.org/")
-   (synopsis "A set of PDFs linked together")
-   (description "Links all the PDFs given as inputs into a single directory. 
-Set LHAPDF_DATA_PATH to the output directory to use them all.")
-   (license gpl3)))
-
-pdfsets
+lhapdf
