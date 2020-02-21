@@ -314,16 +314,13 @@
 	  ;; ma5
 	  (invoke "tar" "-C" "HEPTools/" "-xf" ma5)
 
-	  ; veto everything (for now)
+	  ; veto not installed packages
 	  (substitute* "HEPTools/madanalysis5/madanalysis/input/installation_options.dat"
 	  	       (("# webaccess_veto.*") "webaccess_veto = 1\n")
-	  	       ;; (("# root_veto.*") "root_veto = 1\n")
 	  	       (("# matplotlib_veto.*") "matplotlib_veto = 1\n")
-	  	       ;; (("# delphes_veto.*") "delphes_veto = 1\n")
 	  	       (("# delphesMA5tune_veto.*") "delphesMA5tune_veto = 1\n")
 	  	       (("# latex_veto.*") "latex_veto = 1\n")
 	  	       (("# pdflatex_veto.*") "pdflatex_veto = 1\n")
-	  	       ;; (("# fastjet_veto.*") "fastjet_veto = 1\n")
 	  	       (("# scipy_veto.*") "scipy_veto = 1\n")
 	  	       )
 
@@ -367,6 +364,21 @@
 
 	  ; example of adding an additional model
 	  (invoke "tar" "-C" "models" "-xf" zprime)
+
+	  (wrap-program "HEPTools/madanalysis5/bin/ma5"
+			`("PATH" ":" = (,(getenv "PATH")))
+			`("LD_LIBRARY_PATH" ":" = (""))
+			`("LIBRARY_PATH" ":" prefix (,(string-append fortran "/lib")))
+			`("FC" ":" = (,(string-append fortran "/bin/gfortran"))))
+	  (invoke "bash" "-c" "HEPTools/madanalysis5/bin/ma5 < <(echo \"\n\n\n\n\n\")")
+	  (invoke "bash" "-c" "HEPTools/madanalysis5/bin/ma5 < <(echo \"\n\n\n\n\n\")")
+
+	  ;; force it to be happy with the configuration
+	  (substitute* "HEPTools/madanalysis5/madanalysis/core/main.py"
+		       (("rebuild = forced or FirstUse or UpdateNeed or Missing") "rebuild = False"))
+	  (substitute* "HEPTools/madanalysis5/madanalysis/system/checkup.py"
+		       (("self.logger.error\\('impossible to remove the file") "# "))
+	  
 	  )))
     ; madanalysis5
     ;http://madanalysis.irmp.ucl.ac.be/raw-attachment/wiki/MA5SandBox/ma5_latest.tgz
