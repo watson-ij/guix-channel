@@ -207,7 +207,6 @@ set(PCRE_LIBRARIES \"-L${PCRE_PREFIX}/lib -lpcre\")")))
     ;; entry, not an actual search path.
     (list (search-path-specification
 	   (variable "PYTHONPATH")
-	   (separator #t)
 	   (files '("lib")))))
    (synopsis "ROOT - Data Analysis Framework")
    (description "ROOT - Data Analysis Framework")
