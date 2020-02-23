@@ -162,6 +162,7 @@ set(PCRE_LIBRARIES \"-L${PCRE_PREFIX}/lib -lpcre\")")))
 	     ("libXft" ,libxft)
 	     ("libXext" ,libxext)
 	     ("libGLU" ,glu)
+	     ("mesa" ,mesa)
 					; libGLU libGL
 	     ("tbb" ,tbb)
 	      ))
@@ -201,6 +202,13 @@ set(PCRE_LIBRARIES \"-L${PCRE_PREFIX}/lib -lpcre\")")))
       (modify-phases
        %standard-phases
        (delete 'check))))
+   (native-search-paths
+    ;; This is a Guix-specific environment variable that takes a single
+    ;; entry, not an actual search path.
+    (list (search-path-specification
+	   (variable "PYTHONPATH")
+	   (separator #t)
+	   (files '("lib")))))
    (synopsis "ROOT - Data Analysis Framework")
    (description "ROOT - Data Analysis Framework")
    (home-page "https://root.cern.ch/")
@@ -208,3 +216,4 @@ set(PCRE_LIBRARIES \"-L${PCRE_PREFIX}/lib -lpcre\")")))
    ))
 
 (define-public root root-6)
+root

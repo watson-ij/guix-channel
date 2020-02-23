@@ -378,6 +378,8 @@
 		       (("rebuild = forced or FirstUse or UpdateNeed or Missing") "rebuild = False"))
 	  (substitute* "HEPTools/madanalysis5/madanalysis/system/checkup.py"
 		       (("self.logger.error\\('impossible to remove the file") "# "))
+	  (substitute* "HEPTools/madanalysis5/madanalysis/misc/freeze_environment.py"
+		       (("raise Architecture") "pass #"))
 	  
 	  )))
     ; madanalysis5
