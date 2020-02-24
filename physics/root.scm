@@ -16,6 +16,7 @@
                #:use-module (gnu packages pkg-config)
                #:use-module (gnu packages fontutils)
                #:use-module (gnu packages image)
+               #:use-module (gnu packages gcc)
                #:use-module (gnu packages sqlite)
                #:use-module (gnu packages pcre)
                #:use-module (gnu packages tbb)
@@ -42,7 +43,9 @@
    (build-system cmake-build-system)
    ;; (build-system gnu-build-system)
    (native-inputs `(("sed" ,sed) ("pkg-config" ,pkg-config)))
-   (inputs `(("cc" ,gcc-toolchain)
+   (inputs `(
+	     ("cc" ,gcc-toolchain)
+	     ("fortran" ,gfortran)
 	     ("python" ,python-2.7)
 	     ("python-numpy" ,python2-numpy)
 	     ("bash" ,bash)
@@ -155,6 +158,7 @@ set(PCRE_LIBRARIES \"-L${PCRE_PREFIX}/lib -lpcre\")")))
    ;; (build-system gnu-build-system)
    (native-inputs `(("sed" ,sed) ("pkg-config" ,pkg-config)))
    (inputs `(("cc" ,gcc-toolchain)
+	     ("fortran" ,gfortran)
 	     ("python" ,python)
 	     ("bash" ,bash)
 	     ("gsl" ,gsl)
@@ -207,7 +211,7 @@ set(PCRE_LIBRARIES \"-L${PCRE_PREFIX}/lib -lpcre\")")))
 	"-Dfftw3=ON"
 	"-Dpng=ON"
 	"-Dfitsio=ON"
-	"-Dfortran=OFF"
+	"-Dfortran=ON"
 	"-Dgfal=OFF"
 	"-Dssl=OFF"
 	"-Droofit=ON"
@@ -251,4 +255,4 @@ set(PCRE_LIBRARIES \"-L${PCRE_PREFIX}/lib -lpcre\")")))
    ))
 
 (define-public root root-6)
-root-6
+root-5
