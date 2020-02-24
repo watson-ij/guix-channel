@@ -3,7 +3,7 @@
                #:use-module (guix download)
                #:use-module (guix build-system cmake)
                #:use-module (guix build-system gnu)
-               #:use-module (guix licenses)
+               #:use-module ((guix licenses) #:prefix licenses:)
                #:use-module (gnu packages algebra)
                #:use-module (gnu packages base)
                #:use-module (gnu packages bash)
@@ -14,6 +14,7 @@
                #:use-module (gnu packages digest)
                #:use-module (gnu packages maths)
                #:use-module (gnu packages pkg-config)
+               #:use-module (gnu packages fontutils)
                #:use-module (gnu packages image)
                #:use-module (gnu packages sqlite)
                #:use-module (gnu packages pcre)
@@ -24,28 +25,6 @@
 	       #:use-module (gnu packages tbb)
 	       #:use-module (gnu packages python-xyz)
                #:use-module (gnu packages python))
-
-(define-public after-image
-  (package
-   (name "libAfterImage")
-   (version "1.20")
-   (inputs `(("Zlib" ,zlib)))
-   (source
-    (origin
-     (method url-fetch)
-     (uri "ftp://ftp.afterstep.org/stable/libAfterImage/libAfterImage-1.20.tar.gz")
-     (sha256 (base32 "125y119fbr3g389nr7yls4i7x5zd5pz7h8qn12k8b21b4xk1h6y5"))))
-   (build-system gnu-build-system)
-   (arguments
-    `(#:phases
-      (modify-phases
-       %standard-phases
-       (delete 'check))))
-   (synopsis "libAfterImage is a generic image manipulation library")
-   (description "libAfterImage is a generic image manipulation library")
-   (home-page "http://www.afterstep.org/afterimage/")
-   (license bsd-3)
-   ))
 
 (define-public root-5
   (package
@@ -69,16 +48,13 @@
 	     ("bash" ,bash)
 	     ("gsl" ,gsl)
 	     ("pcre" ,pcre)
-
-	     ("after-image" ,after-image)
-
 					; ("Zlib" ,zlib)
 					; "lzma" ,lzma
 	     ("lz4" ,lz4) ("xxhash" ,xxhash)
 	     ("xz" ,xz)
 	     ("gsl" ,gsl)
 	     ("fftw3" ,fftw)
-	     ("libpng" ,libpng)
+	     ("libpng" ,libpng-1.2)
 	     ("libjpeg" ,libjpeg)
 	     ("libtiff" ,libtiff)
 	     ("sqlite" ,sqlite)
@@ -113,7 +89,7 @@
 	"-Ddcache=OFF"
 	"-Dfftw3=ON"
 	"-Dfitsio=ON"
-	"-Dfortran=OFF"
+	"-Dfortran=ON"
 	"-Dgfal=OFF"
 	"-Dssl=OFF"
 	"-Droofit=ON"
@@ -122,7 +98,7 @@
 	"-Dmysql=OFF"
 	"-Dmonalisa=OFF"
 	"-Dasimage=ON"
-	"-Dbuiltin_afterimage=OFF"
+	"-Dbuiltin_afterimage=ON"
 	)
       #:phases
       (modify-phases
@@ -137,13 +113,27 @@
 set(PCRE_PREFIX \"" (assoc-ref inputs "pcre") "\")
 set(PCRE_INCLUDE_DIR \"${PCRE_PREFIX}/include\")
 set(PCRE_LIBRARIES \"-L${PCRE_PREFIX}/lib -lpcre\")")))
+	  (substitute* "graf2d/asimage/src/libAfterImage/configure"
+		       (("#! /bin/sh")
+			(string-append "#!" (assoc-ref inputs "bash") "/bin/bash"))
+		       (("SHELL=")
+			(string-append "SHELL=" (assoc-ref inputs "bash") "/bin/bash #")))
 	  #t)))
       ))
+   (native-search-paths
+    ;; This is a Guix-specific environment variable that takes a single
+    ;; entry, not an actual search path.
+    (list (search-path-specification
+	   (variable "PYTHONPATH")
+	   (files '("lib")))
+	  (search-path-specification
+	   (variable "ROOTSYS")
+	   (files '("")))))
    (synopsis "ROOT - Data Analysis Framework")
    (description "ROOT - Data Analysis Framework")
    (home-page "https://root.cern.ch/")
 					;   (license lgpl2.1)
-   (license bsd-3)
+   (license licenses:bsd-3)
    ))
 
 
@@ -171,13 +161,12 @@ set(PCRE_LIBRARIES \"-L${PCRE_PREFIX}/lib -lpcre\")")))
 	     ("pcre" ,pcre)
 	     ("curl" ,curl)
 					; ("Zlib" ,zlib)
-	     ("after-image" ,after-image)
 					; "lzma" ,lzma
 	     ("lz4" ,lz4) ("xxhash" ,xxhash)
 	     ("xz" ,xz)
 	     ("gsl" ,gsl)
 	     ("fftw3" ,fftw)
-	     ("libpng" ,libpng)
+	     ("libpng" ,libpng-1.2)
 	     ("libjpeg" ,libjpeg)
 	     ("libtiff" ,libtiff)
 	     ("sqlite" ,sqlite)
@@ -229,23 +218,37 @@ set(PCRE_LIBRARIES \"-L${PCRE_PREFIX}/lib -lpcre\")")))
 	"-Dclad=OFF"
 	"-Dvdt=OFF"
 	"-Dasimage=ON"
-	"-Dbuiltin_afterimage=OFF"
+	"-Dbuiltin_afterimage=ON"
 	)
       #:phases
       (modify-phases
        %standard-phases
-       (delete 'check))))
+       (delete 'check)
+       (add-after
+	'unpack 'patch-paths
+	(lambda*
+	 (#:key inputs outputs #:allow-other-keys)
+	 (substitute* "graf2d/asimage/src/libAfterImage/configure"
+		      (("#! /bin/sh")
+		       (string-append "#!" (assoc-ref inputs "bash") "/bin/bash"))
+		      (("SHELL=")
+		       (string-append "SHELL=" (assoc-ref inputs "bash") "/bin/bash #")))))
+
+       )))
    (native-search-paths
     ;; This is a Guix-specific environment variable that takes a single
     ;; entry, not an actual search path.
     (list (search-path-specification
 	   (variable "PYTHONPATH")
-	   (files '("lib")))))
+	   (files '("lib")))
+	  (search-path-specification
+	   (variable "ROOTSYS")
+	   (files '("")))))
    (synopsis "ROOT - Data Analysis Framework")
    (description "ROOT - Data Analysis Framework")
    (home-page "https://root.cern.ch/")
-   (license lgpl2.1)
+   (license licenses:lgpl2.1)
    ))
 
 (define-public root root-6)
-root
+root-6
