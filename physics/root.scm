@@ -2,12 +2,14 @@
              #:use-module (guix packages)
                #:use-module (guix download)
                #:use-module (guix build-system cmake)
+               #:use-module (guix build-system gnu)
                #:use-module (guix licenses)
                #:use-module (gnu packages algebra)
                #:use-module (gnu packages base)
                #:use-module (gnu packages bash)
                #:use-module (gnu packages compression)
                #:use-module (gnu packages commencement)
+               #:use-module (gnu packages curl)
                #:use-module (gnu packages astronomy)
                #:use-module (gnu packages digest)
                #:use-module (gnu packages maths)
@@ -22,6 +24,28 @@
 	       #:use-module (gnu packages tbb)
 	       #:use-module (gnu packages python-xyz)
                #:use-module (gnu packages python))
+
+(define-public after-image
+  (package
+   (name "libAfterImage")
+   (version "1.20")
+   (inputs `(("Zlib" ,zlib)))
+   (source
+    (origin
+     (method url-fetch)
+     (uri "ftp://ftp.afterstep.org/stable/libAfterImage/libAfterImage-1.20.tar.gz")
+     (sha256 (base32 "125y119fbr3g389nr7yls4i7x5zd5pz7h8qn12k8b21b4xk1h6y5"))))
+   (build-system gnu-build-system)
+   (arguments
+    `(#:phases
+      (modify-phases
+       %standard-phases
+       (delete 'check))))
+   (synopsis "libAfterImage is a generic image manipulation library")
+   (description "libAfterImage is a generic image manipulation library")
+   (home-page "http://www.afterstep.org/afterimage/")
+   (license bsd-3)
+   ))
 
 (define-public root-5
   (package
@@ -45,7 +69,10 @@
 	     ("bash" ,bash)
 	     ("gsl" ,gsl)
 	     ("pcre" ,pcre)
-	     ; ("Zlib" ,zlib)
+
+	     ("after-image" ,after-image)
+
+					; ("Zlib" ,zlib)
 					; "lzma" ,lzma
 	     ("lz4" ,lz4) ("xxhash" ,xxhash)
 	     ("xz" ,xz)
@@ -94,7 +121,8 @@
 	"-Dmathmore=ON"
 	"-Dmysql=OFF"
 	"-Dmonalisa=OFF"
-	"-Dasimage=OFF"
+	"-Dasimage=ON"
+	"-Dbuiltin_afterimage=OFF"
 	)
       #:phases
       (modify-phases
@@ -141,7 +169,9 @@ set(PCRE_LIBRARIES \"-L${PCRE_PREFIX}/lib -lpcre\")")))
 	     ("bash" ,bash)
 	     ("gsl" ,gsl)
 	     ("pcre" ,pcre)
-	     ; ("Zlib" ,zlib)
+	     ("curl" ,curl)
+					; ("Zlib" ,zlib)
+	     ("after-image" ,after-image)
 					; "lzma" ,lzma
 	     ("lz4" ,lz4) ("xxhash" ,xxhash)
 	     ("xz" ,xz)
@@ -173,6 +203,8 @@ set(PCRE_LIBRARIES \"-L${PCRE_PREFIX}/lib -lpcre\")")))
 	"-DCMAKE_INSTALL_LIBDIR=lib"
 	"-DCMAKE_INSTALL_INCLUDEDIR=include"
 	(string-append "-DC_INCLUDE_DIRS=" (assoc-ref %build-inputs "cc") "/include")
+	"-Dcxx17=ON"
+	"-Droot7=ON"
 	"-Dgviz=OFF"
 	"-Dhdfs=OFF"
 	"-Dkrb5=OFF"
@@ -184,6 +216,7 @@ set(PCRE_LIBRARIES \"-L${PCRE_PREFIX}/lib -lpcre\")")))
 	"-Ddavix=OFF"
 	"-Ddcache=OFF"
 	"-Dfftw3=ON"
+	"-Dpng=ON"
 	"-Dfitsio=ON"
 	"-Dfortran=OFF"
 	"-Dgfal=OFF"
@@ -193,10 +226,10 @@ set(PCRE_LIBRARIES \"-L${PCRE_PREFIX}/lib -lpcre\")")))
 	"-Dmathmore=ON"
 	"-Dmysql=OFF"
 	"-Dmonalisa=OFF"
-	"-Dasimage=OFF"
-	"-Dbuiltin_afterimage=OFF"
 	"-Dclad=OFF"
 	"-Dvdt=OFF"
+	"-Dasimage=ON"
+	"-Dbuiltin_afterimage=OFF"
 	)
       #:phases
       (modify-phases
