@@ -7,6 +7,7 @@
   #:use-module (guix build-system python)
   #:use-module (guix licenses)
   #:use-module (gnu packages check)
+  #:use-module (gnu packages elf)
   #:use-module (gnu packages graphviz)
   #:use-module (gnu packages python-science)
   #:use-module (gnu packages python-xyz))
@@ -73,11 +74,30 @@
    (build-system python-build-system)
    (native-inputs `(("pybind11" ,pybind11)
 		    ("pytest" ,python-pytest)
+		    ("patchelf" ,patchelf)
 		    ("pytest-runner" ,python-pytest-runner)))
    (inputs `(("particle" ,particle)
 	     ("hepmc" ,hepmc-3)
 	     ("python-numpy" ,python-numpy)
 	     ("python-pygraphviz" ,python-pygraphviz)))
+   (arguments `(#:imported-modules (,@%python-build-system-modules
+				    (guix build rpath))
+		#:phases
+		(modify-phases
+		 %standard-phases
+		 (add-after
+		  'build 'patch-rpath
+		  (lambda* (#:key inputs outputs #:allow-other-keys)
+		    (use-modules (guix build rpath))
+		    (let ((out (assoc-ref outputs "out"))
+			  (hepmc (assoc-ref inputs "hepmc")))
+		      (for-each
+		       (lambda (file)
+			 (invoke "patchelf"
+				 "--add-needed" "libHepMC3.so"
+				 file)
+			 (augment-rpath file (string-append hepmc "/lib")))
+		       (find-files "build" "so$"))))))))
    (synopsis "HEPMC Reader for Python")
    (description "")
    (home-page "https://github.com/scikit-hep/pyhepmc")
