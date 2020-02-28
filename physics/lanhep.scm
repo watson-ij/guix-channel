@@ -55,8 +55,11 @@
 			      (invoke "cp" "lhep" bin)
 			      (mkdir-p share)
 			      (invoke "cp" "README" share)
-			      (invoke "cp" "-r" "mdl" bin) ; lanhep uses the directory of the binary as a search
-			      (invoke "cp" "-r" "mdl" "SLHAplus" "susy8" "susyLHA" "minsusy" "test" share))))
+			      ; (invoke "cp" "-r" "mdl" bin) ; lanhep uses the directory of the binary as a search
+			      (invoke "cp" "-r" "mdl" "SLHAplus" "susy8" "susyLHA" "minsusy" "test" share)
+			      (wrap-program
+			       (string-append out "/bin/lhep")
+			       `("PATH" ":" prefix (,share))))))
 		 (delete 'check))))
    (synopsis " LanHEP software package for Feynman rules generation")
    (description "
