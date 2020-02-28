@@ -55,7 +55,7 @@
 			      (invoke "cp" "lhep" bin)
 			      (mkdir-p share)
 			      (invoke "cp" "README" share)
-			      ; (invoke "cp" "-r" "mdl" bin) ; lanhep uses the directory of the binary as a search
+			      (invoke "cp" "-r" "mdl" bin) ; lanhep uses the directory of the binary as a search
 			      (invoke "cp" "-r" "mdl" "SLHAplus" "susy8" "susyLHA" "minsusy" "test" share)
 			      (wrap-program
 			       (string-append out "/bin/lhep")
@@ -69,4 +69,3 @@
     (non-copyleft
      "https://theory.sinp.msu.ru/~semenov/licence"
      "Academic use license. Cite references on http://theory.npi.msu.su/~semenov/lanhep.html"))))
-lanhep
