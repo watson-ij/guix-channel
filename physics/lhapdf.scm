@@ -100,6 +100,7 @@
 	       (sha256 (base32 ,sha))))
       (inputs `(("tar" ,tar)
 		("gzip" ,gzip)))
+      (propagated-inputs `(("lhapdf" ,lhapdf))) ; need to export LHAPDF_DATA_PATH into the environment
       (build-system trivial-build-system)
       (arguments `(#:modules ((guix build utils))
 			     #:builder
