@@ -1,4 +1,4 @@
-(define-module (physics delphes)
+(define-module (physics cadabra)
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages python)
   #:use-module (gnu packages python-xyz)
