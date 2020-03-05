@@ -13,7 +13,7 @@
  (guix build-system cmake)
  (guix licenses))
 
-(define cadabra2
+(define-public cadabra2
   (package
    (name "cadabra2") (version "git-240b7a")
    (source
