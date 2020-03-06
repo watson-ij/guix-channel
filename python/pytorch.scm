@@ -4,6 +4,7 @@
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system python)
   #:use-module (guix licenses)
+  #:use-module (non-free cuda)
   #:use-module (gnu packages base)
   #:use-module (gnu packages bootstrap)
   #:use-module (gnu packages elf)
@@ -92,3 +93,12 @@
     Tensor computation (like NumPy) with strong GPU acceleration
     Deep neural networks built on a tape-based autograd system")
    (license bsd-3)))
+
+(define-public pytorch-cuda
+  (package
+   (inherit pytorch)
+   (version "v1.4.0+cu92")
+    (inputs
+     `(("gcc:lib" ,gcc "lib")
+       ("cuda" ,cuda-9.2)
+       ("cudnn" ,cudnn-7.2.1)))))
