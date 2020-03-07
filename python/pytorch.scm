@@ -109,7 +109,7 @@
        ("cuda" ,cuda-9.2)
        ("cudnn" ,cudnn-7.2.1)))))
 
-(define pillow-simd
+(define-public pillow-simd
   (package
    (name "pillow-simd") (version "7.0.0")
    (source (origin (method url-fetch)
@@ -133,7 +133,7 @@
    (home-page "https://github.com/pytorch/vision")
    (license #f)))
 
-(define torchvision
+(define-public torchvision
   (package
    (name "torchvision") (version "v0.5.0")
    (source (origin (method url-fetch)
@@ -149,7 +149,7 @@
    (home-page "https://github.com/pytorch/vision")
    (license #f)))
 
-(define torchaudio
+(define-public torchaudio
   (package
    (name "torchaudio") (version "v0.4.0")
    (source (origin (method url-fetch)
