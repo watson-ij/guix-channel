@@ -149,6 +149,23 @@
    (home-page "https://github.com/pytorch/vision")
    (license #f)))
 
+(define-public torchvision-cuda
+  (package
+   (inherit torchvision)
+   (version "v0.5.0+cu92")
+   ;; (arguments `(#:phases
+   ;; 		(modify-phases
+   ;; 		 %standard-phases
+   ;; 		 (add-after 'unpack 'force-cuda
+   ;; 			    (lambda _
+   ;; 			      (setenv "FORCE_CUDA" "1"))))))
+   (inputs
+    `(("cuda" ,cuda-9.2)
+      ("cudnn" ,cudnn-7.2.1)))
+   (propagated-inputs
+    `(("pillow" ,pillow-simd)
+      ("pytorch" ,pytorch-cuda)))))
+
 (define-public torchaudio
   (package
    (name "torchaudio") (version "v0.4.0")
